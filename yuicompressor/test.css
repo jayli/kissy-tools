@@ -17,6 +17,9 @@ html {
 	background: #FFF;
 	font-family: "ËÎÌו",sans-serif;
 }
+div:first-letter {
+    font-size: 20px;
+}
 body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td {
 	margin: 0;
 	padding: 0;

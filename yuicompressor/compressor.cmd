@@ -44,9 +44,10 @@ REM 1. 首先调用 native2ascii.exe 将非 ascii 字符转换为 \uxxxx 即可
 copy /y "%RESULT_FILE%" "%RESULT_FILE%.tmp" > nul
 "%JAVA_HOME%\bin\native2ascii.exe" -encoding GB18030 "%RESULT_FILE%.tmp" "%RESULT_FILE%"
 del /q "%RESULT_FILE%.tmp"
-REM 2. 对于 css 文件，还需要将 \uxxxx 中的 u 去掉（css 只认识\xxxx）
+REM 2. 对于 css 文件，还需要将 \uxxxx 中的 u 去掉（css 只认识\xxxx） +  ie6 的 first-letter 空格 bug
 if "%~x1" == ".css" (
     "%~dp0fr.exe" "%RESULT_FILE%" -f:\u -t:\
+    "%~dp0fr.exe" "%RESULT_FILE%" -f:":first-letter{" -t:":first-letter {"
 )
 
 REM 显示压缩结果
