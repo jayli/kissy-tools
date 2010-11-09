@@ -35,7 +35,7 @@ Ref:
 =========
 2009-11-27  yubo    受 mail(a)quchao.com 的建议启发，对 css 的 anscii 转换也实现了自动化
 2009-11-10  yubo    归入 OurTools, 细节优化
-2009-02-12	yubo	1. yuicompressor升级到2.4.2
+2009-02-12  yubo    1. yuicompressor升级到2.4.2
                     2. 重写了compressor.cmd, 添加了比较详细的注释
                     3. 改变了在注册表的中的注册方式，以避免与css和js的默认编辑器引起冲突
                     4. 右键菜单项中，添加C作为快速选择键
