@@ -1,0 +1,65 @@
+body {
+  color: #000;
+  background-color: #eee;
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eee), to(#fff));
+  background: -moz-linear-gradient(top, #eee, #fff);
+  font-family: arial, sans-serif, "lucida console";
+  font-size: 10pt;
+}
+h1 {
+    font-size: 1.17em;
+    margin: 1em 0;
+}
+h1 span {
+    color:gray;
+    font-size:12px;
+}
+label {
+    display:inline-block;
+    width: 170px;
+    padding: 4px 0 4px 4px;
+}
+textarea {
+    font-size: 12px;
+}
+.button {
+  display: inline-block;
+  background-color: #eee;
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eee), to(#bbb));
+  background: -moz-linear-gradient(top, #eee, #bbb);
+  border: 1px solid #999;
+  border-radius: 5px;
+  margin-right: 0.4em;
+  padding: 4px 8px;
+  font-size: 20px;
+  margin-top: .8em;
+  cursor: pointer;
+}
+a {
+    color:#33C;
+}
+.button img {
+  vertical-align: bottom;
+}
+
+.top-search {
+    position:absolute;right:10px;top:10px;
+}
+
+#left-textarea-cont {
+    float:left;width:70%;margin-bottom:.5em;
+}
+#right-textarea-cont {
+    position:relative;float:left;width:29%;height:340px;margin-left:1%;margin-bottom:.5em;
+}
+#right-textarea-cont div {
+    position:absolute;left:0;bottom:-25px;
+}
+#right-textarea-cont div label {
+    width:100px;
+}
+
+#msg {
+    display:none;
+    background:yellow;color:black;padding:0 4px;
+}
