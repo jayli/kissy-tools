@@ -8,7 +8,7 @@ KISSY Tools - 前端开发工具集
  - Closure Compiler:  KISSY 采用的 JS 压缩工具
  - YUI Compressor:    KISSY 采用的 CSS 压缩工具
  - Ant:               自动配置、打包工具
- - iDebug:            轻松快捷的淘宝前端调试工具
+ - iDebug:            轻松快捷的淘宝前端调试工具(t)
 
 
  其它工具
