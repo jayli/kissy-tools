@@ -184,6 +184,8 @@ function htmlResponse($html, $rpAssets) {
                 if (strpos($asset[1], $rpAsset[0]) !== false || strpos($rpAsset[0], $asset[1]) !== false) {
                     // var_dump($asset[1]);
                     $html = str_replace($asset[0], htmlResponseReplace($asset, $rpAsset[1], $tpl[$k]), $html);
+                } else {
+                    $html = str_replace($rpAsset[0], $rpAsset[1][0], $html);
                 }
             }
         }

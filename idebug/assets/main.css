@@ -49,8 +49,21 @@ a {
 #left-textarea-cont {
     float:left;width:70%;margin-bottom:.5em;
 }
-#right-textarea-cont {
+#right-textarea-cont, #right-textarea-iframe {
     position:relative;float:left;width:29%;height:340px;margin-left:1%;margin-bottom:.5em;
+}
+#right-textarea-iframe {
+    width: 100%;
+    border: 0;
+    background: #fff;
+    display: none;
+}
+.mode-demo #left-textarea-cont { width:60%; }
+.mode-demo #right-textarea-cont { width:39%; }
+.mode-demo #right-textarea-iframe { display:block; }
+.mode-demo #right-textarea-cont div,
+.mode-demo #right-textarea-cont textarea {
+    display: none;
 }
 #right-textarea-cont div {
     position:absolute;left:0;bottom:-25px;

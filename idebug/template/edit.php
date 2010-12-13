@@ -11,7 +11,8 @@
             --- &copy; 2010 Taobao UED - created by yunqian --- 请拖动此 bookmarklet 到你的收藏夹：
             <a href="javascript:(function(){if(/-min\\./.test(location.href)){location.href = location.href.replace('-min', '');return;}else if(/\\.(css|js)/i.test(location.href)){location.href=location.href.replace(/\\.(css|js)/gi, '.source.$1');return;}window.open('%uri%?url='+location.href);})();">iDebug</a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            启用快捷键：<input type="checkbox" id="shortcut-switcher" checked />
+            启用快捷键:<input type="checkbox" id="shortcut-switcher" checked />&nbsp; | &nbsp;
+            Demo 查看模式:<input type="checkbox" id="demomode-switcher" />
         </span>
         <span id="msg"></span>
     </h1>
@@ -24,6 +25,7 @@
             <textarea id="left-textarea" placeholder="html content" style="width:100%;" rows=22 name=html>%html%</textarea>
         </div>
         <div id="right-textarea-cont">
+            <iframe id="right-textarea-iframe" src="?demo&guid=%guid%"></iframe>
             <textarea id="right-textarea" placeholder="auto responder" style="width:100%;" rows=22 name=responder>%responder%</textarea>
             <div><label>开启 responder：</label><input name=enableResponder type=checkbox %enableResponder%></div>
         </div>
@@ -53,7 +55,8 @@
 
         document.forms["frm"]["asset"].options[parseInt('%asset%', 10)||0].selected = true;
 
-        var shortcutSwitcher = document.getElementById('shortcut-switcher');
+        var shortcutSwitcher = document.getElementById('shortcut-switcher'),
+            iframe = $('#right-textarea-iframe')[0];
 
         $(document).bind('keydown', function(e) {
             if (!shortcutSwitcher.checked) return;
@@ -78,6 +81,12 @@
                 $('#facebox, #facebox_overlay').toggle();
                 return false;
             }
+            // shift + h
+            if ((e.shiftKey) && e.keyCode == 72) {
+                $('#demomode-switcher')[0].checked = !$('#demomode-switcher')[0].checked;
+                toggleDemoMode();
+                return false;
+            }
             // esc
             if (e.keyCode == 27) {
                 $('#facebox, #facebox_overlay').hide();
@@ -98,6 +107,14 @@
             $('#left-textarea')[0].value = style_html($('#left-textarea').val());
         });
 
+        $('#demomode-switcher').click(function() {
+            toggleDemoMode();
+        });
+
+        function toggleDemoMode() {
+            $(document.body)[$('#demomode-switcher')[0].checked ? 'addClass' : 'removeClass']('mode-demo');
+        }
+
         function message(msg) {
             $('#msg').html(msg).show();
             setTimeout(function() {
@@ -109,6 +126,10 @@
             message("saving...");
             $.post('%uri%', $('#frm').serialize(), function(msg) {
                 message(msg === '1' ? 'content saved...' : '<b style="color:red;">error...</b>');
+                if ($(document.body).hasClass('mode-demo')) {
+                    iframe.contentWindow.location.href = iframe.contentWindow.location.href;
+                    $('#left-textarea').focus();
+                }
             });
         }
 
@@ -125,6 +146,7 @@
 <dt>Shift + A：查看所有 CSS 和 JS</dt>
 <dt>Shift + V：查看 Demo</dt>
 <dt>Shfit + ?：查看帮助</dt>
+<dt>Shfit + H：切换 Demo Mode</dt>
 <dt>Ctrl + Enter：保存</dt>
 </dl>
         </div>
