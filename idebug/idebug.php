@@ -22,7 +22,7 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
     }
 
     // 查看页面
-    else {
+    else if (isset($_GET["guid"])) {
         $html = htmlspecialchars_decode($item["html"]);
         /* $html = preg_replace("/<meta.+?charset=\"?([^\"]+?)\".*?>/", "<meta charset=\"utf-8\" />", $html); */
 
@@ -119,4 +119,12 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
     }
 
     echo $html;
+    return;
+    
 }
+
+// 参数错误或无参数
+echo "<script>location.href=\"?demo&guid=4d020049ca105&edit\";</script>";
+
+
+

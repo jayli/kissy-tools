@@ -63,3 +63,36 @@ a {
     display:none;
     background:yellow;color:black;padding:0 4px;
 }
+
+/* --- */
+#facebox{display:none;position:absolute;top:20%;left:50%;z-index:100;text-align:left;margin-left:-190px;}
+#facebox .popup{position:relative;border:3px solid rgba(0,0,0,0);-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;-webkit-box-shadow:0 0 18px rgba(0,0,0,0.4);-moz-box-shadow:0 0 18px rgba(0,0,0,0.4);box-shadow:0 0 18px rgba(0,0,0,0.4);}
+#facebox .content{min-width:370px;padding:10px;background:#fff;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;}
+#facebox .content>p:first-child{margin-top:0;}
+#facebox .content>p:last-child{margin-bottom:0;}
+#facebox .close{position:absolute;top:5px;right:5px;padding:2px;background:#fff;}
+#facebox .close img{opacity:.3;}
+#facebox .close:hover img{opacity:1.0;}
+#facebox .loading{text-align:center;}
+#facebox .image{text-align:center;}
+#facebox img{border:0;margin:0;}
+#facebox_overlay{position:fixed;top:0;left:0;height:100%;width:100%;}
+.facebox_hide{z-index:-100;}
+.facebox_overlayBG{background-color:#000;z-index:99;}
+#facebox .content{width:425px;color:#333;font-size:12px;background:-webkit-gradient(linear,0% 0,5% 100%,from(#f4f9fb),to(#fff));background:-moz-linear-gradient(100% 100% 107deg,#fff,#f4f9fb);}
+#facebox .content.wider{width:500px;}
+#facebox pre{padding:5px 10px;border:1px solid #ddd;border-bottom-color:#eee;border-right-color:#eee;background:#eee;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;}
+#facebox pre.console{color:#fff;background:#333;border-color:#000;border-right-color:#333;border-bottom-color:#333;}
+#facebox ul,#facebox ol{margin:15px 0 15px 20px;}
+#facebox ul li{margin:5px 0;}
+#facebox h2{width:100%;margin:0 0 10px -10px;padding:0 10px 10px 10px;font-size:16px;border-bottom:1px solid #ddd!important;}
+#facebox h3{margin-bottom:-0.5em;font-size:14px;color:#000;}
+#facebox .rule{width:100%;padding:0 10px;margin-left:-10px;}
+#facebox input[type=text]{width:96%;padding:5px 5px;font-size:12px;}
+#facebox .form-actions{margin-top:10px;}
+#facebox .warning{width:100%;padding:5px 10px;margin-top:-9px;margin-left:-10px;font-weight:bold;color:#900;background:url(/images/icons/bigwarning.png) 10px 50% no-repeat #fffbc9;border-bottom:1px solid #ede7a3;}
+#facebox .warning p{margin-left:45px;}
+#facebox .full-button{margin-top:10px;}
+#facebox .full-button .classy{margin:0;display:block;width:100%;}
+#facebox .full-button .classy span{display:block;text-align:center;}
+#facebox_overlay { display:none;background:black;width:100%;height:100%;left:0;top:0;position:fixed;opacity:.2;z-index:99;}

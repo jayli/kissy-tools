@@ -7,7 +7,12 @@
 <body>
     <h1>
         <a href="%uri%">iDebug</a>
-        <span>--- &copy; 2010 Taobao UED - created by yunqian --- 请拖动此 bookmarklet 到你的收藏夹：<a href="javascript:(function(){if(/-min\\./.test(location.href)){location.href = location.href.replace('-min', '');return;}else if(/\\.(css|js)/i.test(location.href)){location.href=location.href.replace(/\\.(css|js)/gi, '.source.$1');return;}window.open('%uri%?url='+location.href);})();">iDebug</a></span>
+        <span>
+            --- &copy; 2010 Taobao UED - created by yunqian --- 请拖动此 bookmarklet 到你的收藏夹：
+            <a href="javascript:(function(){if(/-min\\./.test(location.href)){location.href = location.href.replace('-min', '');return;}else if(/\\.(css|js)/i.test(location.href)){location.href=location.href.replace(/\\.(css|js)/gi, '.source.$1');return;}window.open('%uri%?url='+location.href);})();">iDebug</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            启用快捷键：<input type="checkbox" id="shortcut-switcher" checked />
+        </span>
         <span id="msg"></span>
     </h1>
     <form action="%uri%" class="top-search">
@@ -48,9 +53,13 @@
 
         document.forms["frm"]["asset"].options[parseInt('%asset%', 10)||0].selected = true;
 
+        var shortcutSwitcher = document.getElementById('shortcut-switcher');
+
         $(document).bind('keydown', function(e) {
+            if (!shortcutSwitcher.checked) return;
+            
             // shift + enter
-            if ((e.shiftKey || e.metaKey || e.ctrlKey) && e.keyCode == 13) {
+            if ((e.metaKey || e.ctrlKey) && e.keyCode == 13) {
                 saveForm();
                 return false;
             }
@@ -62,6 +71,16 @@
             // shift + a
             if ((e.shiftKey) && e.keyCode == 65) {
                 window.open(location.href.replace('&edit', '&assets'));
+                return false;
+            }
+            // shift + ?
+            if ((e.shiftKey) && e.keyCode == 191) {
+                $('#facebox, #facebox_overlay').toggle();
+                return false;
+            }
+            // esc
+            if (e.keyCode == 27) {
+                $('#facebox, #facebox_overlay').hide();
                 return false;
             }
         });
@@ -95,5 +114,38 @@
 
     })(jQuery);
     </script>
+
+    <div id="facebox">
+    <div class="popup">
+    <div class="content shortcuts">
+        <h2>帮助</h2>
+        <div class="columns">
+            <h3>快捷键</h3>
+<dl>
+<dt>Shift + A：查看所有 CSS 和 JS</dt>
+<dt>Shift + V：查看 Demo</dt>
+<dt>Shfit + ?：查看帮助</dt>
+<dt>Ctrl + Enter：保存</dt>
+</dl>
+        </div>
+        <h3>规则示例</h3>
+        <div class="columns">
+        <pre><code>a.css
+----
+b.css
+====
+c.js
+----
+d.js
+e.js</code></pre>
+        </div>
+        <h3>说明PPT</h3>
+        <div class="columns" style="margin-top:10px;">
+            <dt><a href="docs/idebug_20101030.pdf">查看</a></dt>
+        </div>
+    </div>
+    </div>
+    </div>
+    <div id="facebox_overlay"></div>
 </body>
 </html>
