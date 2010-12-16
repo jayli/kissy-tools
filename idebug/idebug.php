@@ -124,7 +124,8 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
 }
 
 // 参数错误或无参数
+if (!isset($_GET["ajax"])) {
 echo "<script>location.href=\"?demo&guid=4d020049ca105&edit\";</script>";
-
+}
 
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * »ñÈ¡ PDO
+ * è·å– PDO
  * @return PDO
  */
 function getPDO() {
@@ -9,7 +9,7 @@ function getPDO() {
 }
 
 /**
- * Ö´ĞĞ PDO
+ * æ‰§è¡Œ PDO
  * @param  $sql
  * @return void
  */
@@ -21,7 +21,7 @@ function execPDO($sql) {
 }
 
 /**
- * ĞÂÔöÒ³Ãæ
+ * æ–°å¢é¡µé¢
  * @return void
  */
 function insertPage($html) {
@@ -32,16 +32,18 @@ function insertPage($html) {
             $html = iconv(trim($match[1]), "utf-8", $html);
         }
     }
-    
+
     $d = getPDORequiredData($html, uniqid());
     execPDO("INSERT INTO html (guid, html, name, responder, decombo, source, tag, added, url, asset) VALUES (\"".$d["guid"]."\", \"".$d["html"]."\", \"".$d["name"]."\", \"".$d["responder"]."\", \"".$d["decombo"]."\", \"".$d["source"]."\", \"".$d["tag"]."\", \"".$d["date"]."\", \"".$d["url"]."\", \"".$d["asset"]."\")");
 
-    echo "<br>".$d["guid"];
-    echo "<script>setTimeout(function(){ location.href = '".$d["uti"]."?demo&guid=".$d["guid"]."&edit'; }, 0);</script>";
+    echo $d["guid"];
+    if (!isset($_GET["ajax"])) {
+        echo "<script>setTimeout(function(){ location.href = '".$d["uti"]."?demo&guid=".$d["guid"]."&edit'; }, 0);</script>";
+    }
 }
 
 /**
- * ĞŞ¸ÄÒ³Ãæ
+ * ä¿®æ”¹é¡µé¢
  * @return void
  */
 function updatePage($guid, $html) {
@@ -51,7 +53,7 @@ function updatePage($guid, $html) {
 }
 
 /**
- * ²éÑ¯Ò³Ãæ
+ * æŸ¥è¯¢é¡µé¢
  * @param  $tag
  * @return
  */
@@ -61,13 +63,13 @@ function getPagesBy($tag = null, $guid = null) {
     $pdo = getPDO();
     $stm = $pdo->query("SELECT * FROM html $tag$guid ORDER BY id DESC");
     $pdo = null;
-    
+
     while ($row = $stm->fetch()) { $ret[] = $row; }
     return $ret;
 }
 
 /**
- * Í¨¹ı guid ²éÑ¯Ò³Ãæ
+ * é€šè¿‡ guid æŸ¥è¯¢é¡µé¢
  * @param  $guid
  * @return bool
  */
@@ -77,7 +79,7 @@ function getPageByGuid($guid) {
 }
 
 /**
- * »ñÈ¡ PDO ËùĞèÒªµÄÊı¾İ
+ * è·å– PDO æ‰€éœ€è¦çš„æ•°æ®
  * @param  $html
  * @param  $guid
  * @return
@@ -99,7 +101,7 @@ function getPDORequiredData($html, $guid) {
 }
 
 /**
- * ½âÎöÄ£°æ
+ * è§£ææ¨¡ç‰ˆ
  * @param  $file
  * @param  $data
  * @return void
@@ -117,7 +119,7 @@ function parseTemplate($file, $data) {
 }
 
 /**
- * »ñÈ¡±à¼­×´Ì¬ÏÂµÄ HTML
+ * è·å–ç¼–è¾‘çŠ¶æ€ä¸‹çš„ HTML
  * @param  $item
  * @return void
  */
@@ -127,15 +129,27 @@ function getEditHTML($item) {
         $item[$k] = $item[$k] === "1" ? "checked" : "";
     }
 
+    $item["assets"] = "<ul>";
+    $assets = getAllAssetsTags(htmlspecialchars_decode($item["html"]));
+    foreach(array("css", "js") as $k) {
+        if (count($assets[$k]) > 0) {
+            foreach($assets[$k] as $asset) {
+                $item["assets"] .= "<li>$asset[1] <a href=\"$asset[1]\">ç›´æ¥æ¢</a> <a href=\"".str_replace("-min", "", $asset[1])."\">æ¢æˆsource</a></li>";
+            }
+        }
+    }
+    $item["assets"] .= "</ul>";
+    $item["assets"] = "";
+
     return parseTemplate("./template/edit.php", $item);
 }
 
 /**
  * @param  $html
- * @return »¹Ô­ Combo
+ * @return è¿˜åŸ Combo
  */
 function htmlDecombo($html) {
-    
+
     $assets = getAllAssetsTags($html);
     $tpl = array(
         "css" => "<link rel=\"stylesheet\" href=\"%source%\" />\r\n",
@@ -165,13 +179,13 @@ function htmlDecomboReplace($str, $tpl) {
 }
 
 /**
- * ÊµÏÖ responder ¹¦ÄÜ
+ * å®ç° responder åŠŸèƒ½
  * @param  $html
  * @param  $rpAssets
  * @return void
  */
 function htmlResponse($html, $rpAssets) {
-    
+
     $assets = getAllAssetsTags($html);
     $tpl = array(
         "css" => "\r\n<link rel=\"stylesheet\" href=\"%source%\" />",
@@ -182,7 +196,6 @@ function htmlResponse($html, $rpAssets) {
         foreach($v as $asset) {
             foreach($rpAssets as $rpAsset) {
                 if (strpos($asset[1], $rpAsset[0]) !== false || strpos($rpAsset[0], $asset[1]) !== false) {
-                    // var_dump($asset[1]);
                     $html = str_replace($asset[0], htmlResponseReplace($asset, $rpAsset[1], $tpl[$k]), $html);
                 } else {
                     $html = str_replace($rpAsset[0], $rpAsset[1][0], $html);
@@ -190,7 +203,7 @@ function htmlResponse($html, $rpAssets) {
             }
         }
     }
-    
+
     return $html;
 }
 
@@ -203,7 +216,7 @@ function htmlResponseReplace($o, $ns, $tpl) {
 }
 
 /**
- * »ñÈ¡ËùÓĞ assets ±êÇ© (CSS ºÍ JS)
+ * è·å–æ‰€æœ‰ assets æ ‡ç­¾ (CSS å’Œ JS)
  * @param  $html
  * @return
  */

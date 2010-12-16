@@ -27,9 +27,9 @@
         <div id="right-textarea-cont">
             <iframe id="right-textarea-iframe" src="?demo&guid=%guid%"></iframe>
             <textarea id="right-textarea" placeholder="auto responder" style="width:100%;" rows=22 name=responder>%responder%</textarea>
-            <div><label>开启 responder：</label><input name=enableResponder type=checkbox %enableResponder%></div>
+            <div><label>开启 responder：</label><input name=enableResponder type=checkbox %enableResponder%><!--, <a href="">在线换</a>--></div>
         </div>
-        <div style=clear:both;></div>
+        <div style="clear:both;"></div>
         <label>源地址：</label><input size=60 readonly value="%url%"><br>
         <label>可用来查找的 tag：</label><input name=tag size=60 value="%tag%"><br>
         <label>还原 Combo：</label><input name=decombo type=checkbox %decombo%><br>
@@ -46,6 +46,9 @@
         <a href="javascript:;" id="js-beautify" style=margin-left:10px;>JS Beautify(或格式化 JSON)</a>
         <a href="javascript:;" id="html-beautify" style=margin-left:10px;>HTML Beautify</a>
     </form>
+    <div id="assets-response">
+        %assets%
+    </div>
 
     <script src="assets/jquery-1.4.3.js"></script>
     <script src="assets/beautifier.js"></script>
@@ -90,6 +93,20 @@
             // esc
             if (e.keyCode == 27) {
                 $('#facebox, #facebox_overlay').hide();
+                return false;
+            }
+        });
+
+        $('#assets-response').click(function(e) {
+            if (e.target.tagName.toUpperCase() === 'A') {
+                $.get('?ajax&url='+e.target.href, function(data) {
+                    // debugger;
+                    var rt = $('#right-textarea')[0];
+                    rt.innerHTML = (rt.innerHTML === '' ? '' : '\r\n====')
+                            + '\r\n'+e.target.href+'\r\n----\r\n' + location.href.split('?')[0] + '?demo&guid='+data;
+                    saveForm();
+                    window.open('idebug.php?demo&edit&guid='+data);
+                });
                 return false;
             }
         });
