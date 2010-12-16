@@ -33,6 +33,8 @@ class CollectByUrl_plugin
      * @return voids
      */
     function collectByUrl($url) {
+        // var_dump($url);
+        // return;
         insertPage(addslashes(file_get_contents($url)));
     }
 

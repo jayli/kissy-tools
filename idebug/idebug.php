@@ -80,6 +80,28 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
             $html = str_replace($assetsHost, $assetsHostEnv[$item["asset"]], $html);
         }
 
+        // 支持相对路径
+        // $html = preg_replace("/href=\"(.+?)\"/", "$1", $html);
+        preg_match_all("/(href|src)=(\\'|\")(.+?)(\\'|\")/", $html, $matches);
+        // foreach ($matches[3] as $url) {
+        if (strpos($item["url"], "http://") !== false) {
+            $url = $item["url"];
+            $url = substr($url, 0, strpos($url, "?") == false ? strlen($url) : strpos($url, "?"));
+            $url = substr($url, 0, strrpos($url, "/") == false ? strlen($url) : strrpos($url, "/"))."/";
+            for ($i=0; $i<count($matches[3]); $i++) {
+                if (strpos($matches[3][$i], "http://") !== false) continue;
+                if (strpos($matches[3][$i], "/") === 0) {
+                    $html = str_replace($matches[0][$i], $matches[1][$i]."=\"".$url.substr($matches[3][$i], 1)."\"", $html);
+                } else {
+                    $html = str_replace($matches[0][$i], $matches[1][$i]."=\"".$url.$matches[3][$i]."\"", $html);
+                }
+                // var_dump($matches[3][$i]);
+                // $html = str_replace($matches, "", $html);
+            }
+        }
+        // preg_match("/href=\"(.+?)\"/", $html, $matches);
+
+
         // 查看资源情况
         if (isset($_GET["assets"])) {
             $count = 0;
@@ -123,9 +145,9 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
     
 }
 
-// 参数错误或无参数
-if (!isset($_GET["ajax"])) {
-echo "<script>location.href=\"?demo&guid=4d020049ca105&edit\";</script>";
+// 无参数
+if (count($_SERVER["argv"]) === 0) {
+    echo "<script>location.href=\"?demo&guid=4d020049ca105&edit\";</script>";
 }
 
 
