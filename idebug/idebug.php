@@ -29,6 +29,8 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
         preg_match("<meta.+?charset=\"?([^\"]+?)\".*?>", $html, $match);
         if ($match[1]) {
             if (strpos(" gbk gb2312 gb18030 ", strtolower(trim($match[1])))) {
+                header('Content-Type: text/html; charset='.trim($match[1]));
+                // header('Content-Type: text/html; charset=utf-8');
                 $html = iconv("utf-8", trim($match[1]), $html);
             }
         }
@@ -81,9 +83,8 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
         }
 
         // 支持相对路径
-        // $html = preg_replace("/href=\"(.+?)\"/", "$1", $html);
+        // TODO 支持向上的相对路径 ../
         preg_match_all("/(href|src)=(\\'|\")(.+?)(\\'|\")/", $html, $matches);
-        // foreach ($matches[3] as $url) {
         if (strpos($item["url"], "http://") !== false) {
             $url = $item["url"];
             $url = substr($url, 0, strpos($url, "?") == false ? strlen($url) : strpos($url, "?"));
@@ -95,12 +96,8 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
                 } else {
                     $html = str_replace($matches[0][$i], $matches[1][$i]."=\"".$url.$matches[3][$i]."\"", $html);
                 }
-                // var_dump($matches[3][$i]);
-                // $html = str_replace($matches, "", $html);
             }
         }
-        // preg_match("/href=\"(.+?)\"/", $html, $matches);
-
 
         // 查看资源情况
         if (isset($_GET["assets"])) {
@@ -145,8 +142,8 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
     
 }
 
-// 无参数
-if (count($_SERVER["argv"]) === 0) {
+// 无参数或参数错误
+if (!isset($_GET["url"]) && !isset($_GET["list"]) && !isset($_GET["demo"])) {
     echo "<script>location.href=\"?demo&guid=4d020049ca105&edit\";</script>";
 }
 
