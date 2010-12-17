@@ -18,6 +18,7 @@ if (isset($_GET["demo"]) && isset($_GET["guid"])) {
 
     // 编辑页面
     if (isset($_GET["edit"])) {
+        header('Content-Type: text/html; charset=utf-8');
         $html = getEditHTML($item);
     }
 
