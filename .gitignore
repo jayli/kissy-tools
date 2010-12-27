@@ -1,4 +1,6 @@
 *.iml
+*-min.js
+*-min.css
 .idea/
 *~
 *.diff
