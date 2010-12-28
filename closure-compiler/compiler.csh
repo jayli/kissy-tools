@@ -10,7 +10,7 @@
 set COMPILER_JAR = 'compiler.jar'
 
 # Command extra params
-set EXTRA_PARAMS = ""
+set EXTRA_PARAMS = "--compilation_level ADVANCED_OPTIMIZATIONS"
 
 # Error single
 set ERROR_NO_JAVA  = 5
