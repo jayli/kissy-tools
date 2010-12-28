@@ -30,9 +30,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.ant</groupId>
-  <artifactId>ant-apache-log4j</artifactId>
+  <artifactId>ant-junit4</artifactId>
   <version>1.8.2</version>
-  <name>Apache Ant + Log4J</name>
+  <name>Apache Ant + JUnit 4</name>
+  <description>contains JUnit 4.x support</description>
   <dependencies>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -41,9 +42,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.13</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.1</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -56,7 +57,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
           <source>1.4</source>
           <target>1.4</target>
           <includes>
-            <include>org/apache/tools/ant/listener/Log4jListener*</include>
+            <include>org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter*</include>
           </includes>
         </configuration>
       </plugin>
