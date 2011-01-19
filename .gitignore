@@ -9,3 +9,4 @@
 *.swp
 .DS_Store
 Thumb.db
+module-compiler/out/
