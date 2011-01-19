@@ -17,7 +17,7 @@ public class AstUtils {
 	 */
 	public static Node parse(String code) {
 		//just want to use Compiler as one parameter for CompilerInput's getAstRoot method
-		com.google.javascript.jscomp.Compiler compiler = new Compiler();
+		Compiler compiler = new Compiler();
 		CompilerOptions options = new CompilerOptions();
 		// Advanced mode is used here, but additional options could be set, too.
 		CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(
@@ -82,5 +82,8 @@ public class AstUtils {
 
 		//serialize
 		System.out.println(toSource(n));
+
+
+
 	}
 }

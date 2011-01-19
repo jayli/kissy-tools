@@ -1,3 +1,3 @@
-KISSY.add("dom",function(){
+KISSY.add(function(){
 
 });

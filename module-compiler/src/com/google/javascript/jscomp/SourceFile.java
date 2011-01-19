@@ -32,7 +32,7 @@ import java.nio.charset.Charset;
 
 /**
  * An abstract representation of a source file that provides access to
- * language-neutral features. The source file can be loaded from various
+ * language-neutral features. The source file can be genned from various
  * locations, such as from disk or from a preloaded string.
  *
  * @author nicksantos@google.com (Nick Santos)

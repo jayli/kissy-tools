@@ -1,5 +1,5 @@
-KISSY.add("event",function(){
+KISSY.add(function(){
 
 },{
-    requires:["event/base","event/ie"]
+    requires:["event/ie"]
 });

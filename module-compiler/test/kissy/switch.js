@@ -1,4 +1,4 @@
-KISSY.add("switch",function(){
+KISSY.add(function(){
 
 },{
    requires:["dom","uibase/position"]

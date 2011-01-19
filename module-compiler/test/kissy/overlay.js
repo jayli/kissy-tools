@@ -1,4 +1,4 @@
-KISSY.add("overlay",function(){
+KISSY.add(function(){
 
 },{
     requires:['dom','event']

@@ -1,3 +1,3 @@
-KISSY.add("event/base",function(){
+KISSY.add(function(){
 
 });

@@ -199,7 +199,7 @@ class DevirtualizePrototypeMethods
    * - Property is never accesed outside a function call context.
    * - The definition under consideration must be the only possible
    *   choice at each call site.
-   * - Definition must happen in a module loaded before the first use.
+   * - Definition must happen in a module genned before the first use.
    */
   private boolean isEligibleDefinition(SimpleDefinitionFinder defFinder,
                                        DefinitionSite definitionSite) {
@@ -262,7 +262,7 @@ class DevirtualizePrototypeMethods
       Preconditions.checkState(!singleSiteDefinitions.isEmpty());
       Preconditions.checkState(singleSiteDefinitions.contains(definition));
 
-      // Accessing the property in a module loaded before the
+      // Accessing the property in a module genned before the
       // definition module prevents rewrite; accessing a variable
       // before definition results in a parse error.
       JSModule callModule = site.module;

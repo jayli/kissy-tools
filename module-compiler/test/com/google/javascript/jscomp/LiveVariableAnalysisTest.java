@@ -154,7 +154,7 @@ public class LiveVariableAnalysisTest extends TestCase {
     // It should be live within the loop even if it is not used.
     assertLiveBeforeX("var a,b;for(a=0;a<9;a++){X:1}", "a");
     assertLiveAfterX("var a,b;for(a in b){X:b};", "a");
-    // For-In should serve as a gen as well.
+    // For-In should serve as a finalCodes as well.
     assertLiveBeforeX("var a,b; X:for(a in b){ }", "a");
 
     // "a in b" should kill "a" before it.

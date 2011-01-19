@@ -70,10 +70,10 @@ import java.util.Map;
  *
  * <p>You might wonder why this is necessary.  Two alternatives might come to
  * mind.  First, you might imagine a system where generated extensions are
- * automatically registered when their containing classes are loaded.  This
+ * automatically registered when their containing classes are genned.  This
  * is a popular technique, but is bad design; among other things, it creates a
  * situation where behavior can change depending on what classes happen to be
- * loaded.  It also introduces a security vulnerability, because an
+ * genned.  It also introduces a security vulnerability, because an
  * unprivileged class could cause its code to be called unexpectedly from a
  * privileged class by registering itself as an extension of the right type.
  *

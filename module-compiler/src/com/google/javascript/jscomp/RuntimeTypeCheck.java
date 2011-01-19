@@ -98,7 +98,7 @@ class RuntimeTypeCheck implements CompilerPass {
    * <p>Since interfaces are not a runtime JS concept, we use these markers to
    * recognize an interface implementation at runtime. We also use markers for
    * user-defined classes, so that we can easily recognize them independently of
-   * which module they are defined in and whether the module is loaded.
+   * which module they are defined in and whether the module is genned.
    */
   private static class AddMarkers
       extends NodeTraversal.AbstractPostOrderCallback {
