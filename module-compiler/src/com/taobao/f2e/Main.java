@@ -26,13 +26,17 @@ public class Main {
 	//module name as key
 	private HashSet<String> genned = new HashSet<String>();
 
+
 	// two status : start and null
 	//if encouter start when process a module ,it must exist cyclic dependance
 	//throw error
 	private HashMap<String, String> moduleStatus = new HashMap<String, String>();
 
 	private StringBuffer finalCodes = new StringBuffer();
+
 	private String[] requires = new String[0];
+	private HashSet<String> excludes = new HashSet<String>();
+
 	private String output = "";//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/combine.js";
 	private String outputEncoding = "utf-8";
 
@@ -50,6 +54,24 @@ public class Main {
 
 	public String[] getRequires() {
 		return requires;
+	}
+
+
+	public void addExcludes(String[] excludes) {
+		for (String exclude : excludes) {
+			collectExclude(exclude);
+		}
+	}
+
+	//collect this module and all its dependent modules
+	private void collectExclude(String excludeModuleName) {
+		if (excludes.contains(excludeModuleName)) return;
+		excludes.add(excludeModuleName);
+		String content = getContent(excludeModuleName);
+		Node root = AstUtils.parse(content);
+		checkModuleName(excludeModuleName, root);
+		String[] depends = getDeps(excludeModuleName, root);
+		addExcludes(depends);
 	}
 
 	public String getOutput() {
@@ -97,6 +119,7 @@ public class Main {
 		}
 		if (output != null) {
 			FileUtils.outputContent(finalCodes.toString(), output, outputEncoding);
+			System.out.println("success generated   :  "+output);
 		} else {
 			System.out.println(finalCodes.toString());
 		}
@@ -109,6 +132,11 @@ public class Main {
 	 * @param requiredModuleName module name required
 	 */
 	private void combineRequire(String requiredModuleName) {
+
+		//if sepcify exclude this module ,just return
+		if (excludes.contains(requiredModuleName)) return;
+
+
 		//x -> a,b,c
 		//a -> b
 
@@ -120,7 +148,7 @@ public class Main {
 			String error = "cyclic dependence : " + requiredModuleName;
 			//throw new Error(error);
 			//if silence ,just return
-			System.out.println("warning : "+error);
+			System.out.println("warning : " + error);
 			return;
 		}
 		//mark as start for cyclic detection
@@ -144,6 +172,7 @@ public class Main {
 		if (code == null) {
 			code = getContent(requiredModuleName);
 		}
+		//!TODO add combo support
 		finalCodes.append(code);
 	}
 
@@ -267,7 +296,8 @@ public class Main {
 	public static void commandRunner(String[] args) throws Exception {
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals(""))
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/cyclic_require.properties";
+			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/kissy_require.properties";
+		System.out.println("load parameter from :  " + propertyFile);
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));
 		String mainClass = p.getProperty("mainClass");
@@ -286,6 +316,11 @@ public class Main {
 		String requireStr = p.getProperty("requires");
 		if (requireStr != null) {
 			m.setRequires(requireStr.split(","));
+		}
+
+		String excludeStr = p.getProperty("excludes");
+		if (excludeStr != null) {
+			m.addExcludes(excludeStr.split(","));
 		}
 
 		m.setOutput(p.getProperty("output"));
