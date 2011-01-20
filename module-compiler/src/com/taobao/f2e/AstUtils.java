@@ -58,12 +58,18 @@ public class AstUtils {
 		String code = "var xyz=1+2+3;alert(xyz);alert(z);";
 		String code2 = "var z=2;";
 		String kissy = "KISSY.add('event',function(){},{requires:['dom','event']});";
-
+		String seajs = "module.declare('event',['dom','event'],function(){});";
 
 		Node k= parse(kissy);
 
 
 		System.out.println(k.toStringTree());
+
+
+		Node sea= parse(seajs);
+
+
+		System.out.println(sea.toStringTree());
 
 		//get ast
 		Node n = parse(code);

@@ -18,23 +18,62 @@ import java.util.Properties;
  */
 public class Main {
 
-	public String[] encodings = {"utf-8"};
+	private String[] encodings = {"utf-8"};
 	private String[] baseUrls = {
 			//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/"
 	};
 	//when module is generated to finalCodes,mark this module
 	//module name as key
-	public HashSet<String> genned = new HashSet<String>();
+	private HashSet<String> genned = new HashSet<String>();
 
 	//
-	public StringBuffer finalCodes = new StringBuffer();
-	public String[] requires = new String[0];
-	public String output = "";//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/combine.js";
-	public String outputEncoding = "utf-8";
+	private StringBuffer finalCodes = new StringBuffer();
+	private String[] requires = new String[0];
+	private String output = "";//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/combine.js";
+	private String outputEncoding = "utf-8";
 
 	//when module ast modified , serialized code goes here
 	//module name as key
-	public HashMap<String, String> moduleCodes = new HashMap<String, String>();
+	private HashMap<String, String> moduleCodes = new HashMap<String, String>();
+
+	public String[] getEncodings() {
+		return encodings;
+	}
+
+	public String[] getBaseUrls() {
+		return baseUrls;
+	}
+
+	public String[] getRequires() {
+		return requires;
+	}
+
+	public String getOutput() {
+		return output;
+	}
+
+	public String getOutputEncoding() {
+		return outputEncoding;
+	}
+
+	public void setEncodings(String[] encodings) {
+		this.encodings = encodings;
+	}
+
+
+	public void setRequires(String[] requires) {
+		this.requires = requires;
+	}
+
+
+	public void setOutput(String output) {
+		this.output = output;
+	}
+
+
+	public void setOutputEncoding(String outputEncoding) {
+		this.outputEncoding = outputEncoding;
+	}
 
 	public void setBaseUrls(String[] bases) {
 		ArrayList<String> re = new ArrayList<String>();
@@ -61,7 +100,7 @@ public class Main {
 
 
 	private void combineRequire(String r) {
-		String[] deps = getDepsAndAddModuleName(r);
+		String[] deps = getDepsAndCheckModuleName(r);
 		for (String dep : deps) {
 			combineRequire(dep);
 		}
@@ -112,7 +151,7 @@ public class Main {
 	 *                        4. ./h to event/h
 	 * @return dep's normal path
 	 */
-	private String getDepModuleName(String moduleName, String relativeDepName) {
+	protected String getDepModuleName(String moduleName, String relativeDepName) {
 		relativeDepName = FileUtils.escapePath(relativeDepName);
 		moduleName = FileUtils.escapePath(moduleName);
 
@@ -137,10 +176,13 @@ public class Main {
 		return FileUtils.normPath(relativeDepName);
 	}
 
-	private String[] getDepsAndAddModuleName(String moduleName) {
+	/**
+	 * @param moduleName module's name
+	 * @param root	   module ast's root node
+	 * @return normalized dep names
+	 */
+	protected String[] getDeps(String moduleName, Node root) {
 		ArrayList<String> re = new ArrayList<String>();
-		String content = getContent(moduleName);
-		Node root = AstUtils.parse(content);
 		Node r = root.getFirstChild().getFirstChild().getLastChild();
 		if (r.getType() == Token.OBJECTLIT) {
 			Node first = r.getFirstChild();
@@ -162,14 +204,30 @@ public class Main {
 				first = first.getNext();
 			}
 		}
+		return re.toArray(new String[re.size()]);
+	}
+
+	/**
+	 * S.add(func); -> S.add("moduleName",func);
+	 *
+	 * @param moduleName module's name
+	 * @param root	   module's root ast node
+	 */
+	protected void checkModuleName(String moduleName, Node root) {
 		Node getProp = root.getFirstChild().getFirstChild().getFirstChild();
-		//add's first parameter is not string，add module name automatically
+		//add method's first parameter is not string，add module name automatically
 		if (getProp.getNext().getType() != Token.STRING) {
 			getProp.getParent().addChildAfter(Node.newString(moduleName), getProp);
 			//serialize ast to code cache
 			moduleCodes.put(moduleName, AstUtils.toSource(root));
 		}
-		return re.toArray(new String[re.size()]);
+	}
+
+	private String[] getDepsAndCheckModuleName(String moduleName) {
+		String content = getContent(moduleName);
+		Node root = AstUtils.parse(content);
+		checkModuleName(moduleName, root);
+		return getDeps(moduleName, root);
 	}
 
 
@@ -179,10 +237,13 @@ public class Main {
 			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/require.properties";
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));
-		Main m = new Main();
+		String mainClass = p.getProperty("mainClass");
+		if (mainClass == null)
+			mainClass = "com.taobao.f2e.Main";
+		Main m = (Main) Class.forName(mainClass).newInstance();
 		String encodingStr = p.getProperty("encodings");
 		if (encodingStr != null) {
-			m.encodings = encodingStr.split(",");
+			m.setEncodings(encodingStr.split(","));
 		}
 		String baseUrlStr = p.getProperty("baseUrls");
 		if (baseUrlStr != null) {
@@ -191,19 +252,20 @@ public class Main {
 
 		String requireStr = p.getProperty("requires");
 		if (requireStr != null) {
-			m.requires = requireStr.split(",");
+			m.setRequires(requireStr.split(","));
 		}
 
-		m.output = p.getProperty("output");
+		m.setOutput(p.getProperty("output"));
 
 		String outputEncoding = p.getProperty("outputEncoding");
 		if (outputEncoding != null) {
-			m.outputEncoding = outputEncoding;
+			m.setOutputEncoding(outputEncoding);
 		}
 
 		m.run();
 
 	}
+
 
 	public static void testGetDepModuleName() throws Exception {
 		Main m = new Main();

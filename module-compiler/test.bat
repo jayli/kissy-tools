@@ -1,1 +1,0 @@
-java -jar kissy-compiler.jar require.properties

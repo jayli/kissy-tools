@@ -1,4 +1,4 @@
-<project name="kissy-compiler" basedir="." default="jar">
+<project name="module-compiler" basedir="." default="jar">
 
     <!-- define other variables -->
     <property name="src.dir" value="${basedir}/src"/>
