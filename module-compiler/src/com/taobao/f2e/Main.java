@@ -26,7 +26,11 @@ public class Main {
 	//module name as key
 	private HashSet<String> genned = new HashSet<String>();
 
-	//
+	// two status : start and null
+	//if encouter start when process a module ,it must exist cyclic dependance
+	//throw error
+	private HashMap<String, String> moduleStatus = new HashMap<String, String>();
+
 	private StringBuffer finalCodes = new StringBuffer();
 	private String[] requires = new String[0];
 	private String output = "";//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/combine.js";
@@ -88,8 +92,8 @@ public class Main {
 	}
 
 	public void run() {
-		for (String r : requires) {
-			combineRequire(r);
+		for (String requiredModuleName : requires) {
+			combineRequire(requiredModuleName);
 		}
 		if (output != null) {
 			FileUtils.outputContent(finalCodes.toString(), output, outputEncoding);
@@ -98,19 +102,47 @@ public class Main {
 		}
 	}
 
+	/**
+	 * x -> a,b,c : x depends on a,b,c
+	 * add a,b,c then add x to final code buffer
+	 *
+	 * @param requiredModuleName module name required
+	 */
+	private void combineRequire(String requiredModuleName) {
+		//x -> a,b,c
+		//a -> b
 
-	private void combineRequire(String r) {
-		String[] deps = getDepsAndCheckModuleName(r);
+		//when requiredModuleName=x and encouter b ,just return
+		//reduce redundant parse and recursive
+		if (genned.contains(requiredModuleName)) return;
+
+		if (moduleStatus.get(requiredModuleName) != null) {
+			String error = "cyclic dependence : " + requiredModuleName;
+			//throw new Error(error);
+			//if silence ,just return
+			System.out.println("warning : "+error);
+			return;
+		}
+		//mark as start for cyclic detection
+		moduleStatus.put(requiredModuleName, "start");
+
+		String[] deps = getDepsAndCheckModuleName(requiredModuleName);
 		for (String dep : deps) {
 			combineRequire(dep);
 		}
-		if (genned.contains(r)) return;
-		genned.add(r);
 
+		if (genned.contains(requiredModuleName)) {
+			throw new Error("it must not happen");
+		}
+
+		//remove mark for cyclic detection
+		moduleStatus.remove(requiredModuleName);
+
+		genned.add(requiredModuleName);
 		//first get modified code if ast modified
-		String code = moduleCodes.get(r);
+		String code = moduleCodes.get(requiredModuleName);
 		if (code == null) {
-			code = getContent(r);
+			code = getContent(requiredModuleName);
 		}
 		finalCodes.append(code);
 	}
@@ -120,6 +152,7 @@ public class Main {
 	 * @return module's code
 	 */
 	private String getContent(String moduleName) {
+		//System.out.println("get file content :" + moduleName);
 		String path = getModuleFullPath(moduleName);
 		String baseUrl = path.replaceFirst(moduleName + "$", "");
 		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
@@ -234,7 +267,7 @@ public class Main {
 	public static void commandRunner(String[] args) throws Exception {
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals(""))
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/require.properties";
+			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/cyclic_require.properties";
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));
 		String mainClass = p.getProperty("mainClass");

@@ -6,4 +6,6 @@ KISSY.add("event/ie", function() {
 }, {requires:["./base"]});
 KISSY.add("event", function() {
 }, {requires:["event/ie"]});
+KISSY.add("overlay", function() {
+}, {requires:["dom", "event"]});
 
