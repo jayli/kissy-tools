@@ -5,10 +5,7 @@ import com.google.javascript.rhino.Token;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * invoke module compiler for kissy
@@ -22,6 +19,11 @@ public class Main {
 	private String[] baseUrls = {
 			//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/"
 	};
+
+	public void setOutputCombo(boolean outputCombo) {
+		this.outputCombo = outputCombo;
+	}
+
 	//when module is generated to finalCodes,mark this module
 	//module name as key
 	private HashSet<String> genned = new HashSet<String>();
@@ -43,6 +45,18 @@ public class Main {
 	//when module ast modified , serialized code goes here
 	//module name as key
 	private HashMap<String, String> moduleCodes = new HashMap<String, String>();
+
+
+	private boolean outputCombo = false;
+
+	private HashMap<String, StringBuffer> comboUrls = new HashMap<String, StringBuffer>();
+
+	static class ModuleDesc {
+		String path;
+		String encoding;
+		String base;
+		String moduleName;
+	}
 
 	public String[] getEncodings() {
 		return encodings;
@@ -117,12 +131,22 @@ public class Main {
 		for (String requiredModuleName : requires) {
 			combineRequire(requiredModuleName);
 		}
-		if (output != null) {
-			FileUtils.outputContent(finalCodes.toString(), output, outputEncoding);
-			System.out.println("success generated   :  "+output);
+
+		//combo need to handled seperately for each base
+		if (outputCombo) {
+			Set<String> keys = comboUrls.keySet();
+			for (String key : keys) {
+				System.out.println(comboUrls.get(key).toString());
+			}
 		} else {
-			System.out.println(finalCodes.toString());
+			if (output != null) {
+				FileUtils.outputContent(finalCodes.toString(), output, outputEncoding);
+				System.out.println("success generated   :  " + output);
+			} else {
+				System.out.println(finalCodes.toString());
+			}
 		}
+
 	}
 
 	/**
@@ -167,6 +191,19 @@ public class Main {
 		moduleStatus.remove(requiredModuleName);
 
 		genned.add(requiredModuleName);
+
+		if (this.outputCombo) {
+			//generate combo url by each base
+			outputCombo(requiredModuleName);
+		} else {
+			//just append this file's content
+			outputContent(requiredModuleName);
+		}
+
+	}
+
+
+	private void outputContent(String requiredModuleName) {
 		//first get modified code if ast modified
 		String code = moduleCodes.get(requiredModuleName);
 		if (code == null) {
@@ -176,17 +213,50 @@ public class Main {
 		finalCodes.append(code);
 	}
 
+	private void outputCombo(String requiredModuleName) {
+		//first get modified code if ast modified
+		String code = moduleCodes.get(requiredModuleName);
+		ModuleDesc desc = getModuleDesc(requiredModuleName);
+		if (code != null) {
+			FileUtils.outputContent(code, desc.path, desc.encoding);
+		}
+
+		if (!comboUrls.containsKey(desc.base)) {
+			comboUrls.put(desc.base, new StringBuffer());
+		}
+
+		StringBuffer comboUrl = comboUrls.get(desc.base);
+		if (comboUrl.length() > 0) {
+			comboUrl.append(",");
+		} else {
+			comboUrl.append(desc.base+"??");
+		}
+		comboUrl.append(requiredModuleName);
+	}
+
 	/**
 	 * @param moduleName must be absolute
 	 * @return module's code
 	 */
 	private String getContent(String moduleName) {
 		//System.out.println("get file content :" + moduleName);
+		ModuleDesc desc = getModuleDesc(moduleName);
+		return FileUtils.getFileContent(desc.path, desc.encoding);
+	}
+
+
+	private ModuleDesc getModuleDesc(String moduleName) {
 		String path = getModuleFullPath(moduleName);
-		String baseUrl = path.replaceFirst(moduleName + "$", "");
+		String baseUrl = path.replaceFirst("(?i)" + moduleName + ".js$", "");
 		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
-		if (index == -1) index = 0;
-		return FileUtils.getFileContent(path, encodings[index]);
+		if (index == -1 || index >= encodings.length) index = 0;
+		String encoding = encodings[index];
+		ModuleDesc desc = new ModuleDesc();
+		desc.encoding = encoding;
+		desc.path = path;
+		desc.base = baseUrl;
+		desc.moduleName = moduleName;
+		return desc;
 	}
 
 	private String getModuleFullPath(String moduleName) {
@@ -296,7 +366,7 @@ public class Main {
 	public static void commandRunner(String[] args) throws Exception {
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals(""))
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/kissy_require.properties";
+			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/combo_require.properties";
 		System.out.println("load parameter from :  " + propertyFile);
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));
@@ -328,6 +398,12 @@ public class Main {
 		String outputEncoding = p.getProperty("outputEncoding");
 		if (outputEncoding != null) {
 			m.setOutputEncoding(outputEncoding);
+		}
+
+
+		String outputCombo = p.getProperty("outputCombo");
+		if (outputCombo != null) {
+			m.setOutputCombo(true);
 		}
 
 		m.run();
