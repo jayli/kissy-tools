@@ -1,9 +1,6 @@
 package com.taobao.f2e;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 
 
@@ -18,7 +15,11 @@ public class FileUtils {
 				sb.append(line);
 				sb.append("\n");
 			}
-		} catch (Exception e) {
+		}
+		catch (FileNotFoundException e) {
+			System.out.println("warning : file not found : "+path);
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {

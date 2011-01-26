@@ -58,19 +58,22 @@ public class AstUtils {
 		String code = "var xyz=1+2+3;alert(xyz);alert(z);";
 		String code2 = "var z=2;";
 		String kissy = "KISSY.add('event',function(){},{requires:['dom','event']});";
-		String seajs = "module.declare('event',['dom','event'],function(){});";
+		String seajs = "module.declare('x',['z','p'],function(){require('2');});";
 
-		Node k= parse(kissy);
-
-
-		System.out.println(k.toStringTree());
+		Node k = parse(kissy);
 
 
-		Node sea= parse(seajs);
+		//System.out.println(k.toStringTree());
+
+
+		Node sea = parse(seajs);
 
 
 		System.out.println(sea.toStringTree());
-
+//		System.out.println(sea.getFirstChild().getFirstChild().getChildAtIndex(1).toStringTree());
+//		System.out.println(sea.getFirstChild().getFirstChild().getChildAtIndex(1).getChildAtIndex(2)
+//		.getFirstChild().getFirstChild().getFirstChild().getType()
+//		);
 		//get ast
 		Node n = parse(code);
 
@@ -83,12 +86,11 @@ public class AstUtils {
 		//add one node from tree1 to tree2
 		n.addChildAfter(newChild, n.getFirstChild());
 
-		Node nn=Node.newString("program generated");
+		Node nn = Node.newString("program generated");
 		n.addChildToBack(nn);
 
 		//serialize
-		System.out.println(toSource(n));
-
+		//System.out.println(toSource(n));
 
 
 	}

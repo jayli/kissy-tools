@@ -44,32 +44,15 @@ public class Main {
 
 	//when module ast modified , serialized code goes here
 	//module name as key
-	private HashMap<String, String> moduleCodes = new HashMap<String, String>();
+	protected HashMap<String, String> moduleCodes = new HashMap<String, String>();
 
 
 	private boolean outputCombo = false;
 
 	private HashMap<String, StringBuffer> comboUrls = new HashMap<String, StringBuffer>();
 
-	static class ModuleDesc {
-		String path;
-		String encoding;
-		String base;
-		String moduleName;
-	}
-
-	public String[] getEncodings() {
-		return encodings;
-	}
-
-	public String[] getBaseUrls() {
-		return baseUrls;
-	}
-
-	public String[] getRequires() {
-		return requires;
-	}
-
+	//map about module name and its des ,for cache
+	private HashMap<String, ModuleDesc> nameDescMap = new HashMap<String, ModuleDesc>();
 
 	public void addExcludes(String[] excludes) {
 		for (String exclude : excludes) {
@@ -88,13 +71,6 @@ public class Main {
 		addExcludes(depends);
 	}
 
-	public String getOutput() {
-		return output;
-	}
-
-	public String getOutputEncoding() {
-		return outputEncoding;
-	}
 
 	public void setEncodings(String[] encodings) {
 		this.encodings = encodings;
@@ -157,13 +133,19 @@ public class Main {
 	 */
 	private void combineRequire(String requiredModuleName) {
 
+		//check whether module's file is valid
+		ModuleDesc moduleDesc = getModuleDesc(requiredModuleName);
+		if (!new File(moduleDesc.path).exists()) {
+			System.out.println("warning : module's file not found : " + requiredModuleName);
+			return;
+		}
+
 		//if sepcify exclude this module ,just return
 		if (excludes.contains(requiredModuleName)) return;
 
 
 		//x -> a,b,c
 		//a -> b
-
 		//when requiredModuleName=x and encouter b ,just return
 		//reduce redundant parse and recursive
 		if (genned.contains(requiredModuleName)) return;
@@ -208,8 +190,10 @@ public class Main {
 		String code = moduleCodes.get(requiredModuleName);
 		if (code == null) {
 			code = getContent(requiredModuleName);
+		} else {
+			ModuleDesc desc = getModuleDesc(requiredModuleName);
+			FileUtils.outputContent(code, desc.path, desc.encoding);
 		}
-		//!TODO add combo support
 		finalCodes.append(code);
 	}
 
@@ -229,14 +213,14 @@ public class Main {
 		if (comboUrl.length() > 0) {
 			comboUrl.append(",");
 		} else {
-			comboUrl.append(desc.base+"??");
+			comboUrl.append(desc.base).append("??");
 		}
 		comboUrl.append(requiredModuleName);
 	}
 
 	/**
 	 * @param moduleName must be absolute
-	 * @return module's code
+	 * @return {String|null} module's code,null表示出错（文件不存在？）
 	 */
 	private String getContent(String moduleName) {
 		//System.out.println("get file content :" + moduleName);
@@ -246,6 +230,9 @@ public class Main {
 
 
 	private ModuleDesc getModuleDesc(String moduleName) {
+		if (nameDescMap.get(moduleName) != null)
+			return nameDescMap.get(moduleName);
+
 		String path = getModuleFullPath(moduleName);
 		String baseUrl = path.replaceFirst("(?i)" + moduleName + ".js$", "");
 		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
@@ -256,6 +243,7 @@ public class Main {
 		desc.path = path;
 		desc.base = baseUrl;
 		desc.moduleName = moduleName;
+		nameDescMap.put(moduleName, desc);
 		return desc;
 	}
 
@@ -286,26 +274,43 @@ public class Main {
 	protected String getDepModuleName(String moduleName, String relativeDepName) {
 		relativeDepName = FileUtils.escapePath(relativeDepName);
 		moduleName = FileUtils.escapePath(moduleName);
-
+		String depModuleName;
 		//no relative path
 		if (relativeDepName.indexOf("../") == -1
-				&& relativeDepName.indexOf("./") == -1)
-			return relativeDepName;
+				&& relativeDepName.indexOf("./") == -1) {
+			depModuleName = relativeDepName;
 
-		//at start,consider moduleName
-		if (relativeDepName.indexOf("../") == 0
-				|| relativeDepName.indexOf("./") == 0) {
-			int lastSlash = moduleName.lastIndexOf("/");
-			String archor = moduleName;
-			if (lastSlash == -1) {
-				archor = "";
-			} else {
-				archor = archor.substring(0, lastSlash + 1);
+		} else {
+			//at start,consider moduleName
+			if (relativeDepName.indexOf("../") == 0
+					|| relativeDepName.indexOf("./") == 0) {
+				int lastSlash = moduleName.lastIndexOf("/");
+				String archor = moduleName;
+				if (lastSlash == -1) {
+					archor = "";
+				} else {
+					archor = archor.substring(0, lastSlash + 1);
+				}
+				return FileUtils.normPath(archor + relativeDepName);
 			}
-			return FileUtils.normPath(archor + relativeDepName);
+			//at middle,just norm
+			depModuleName = FileUtils.normPath(relativeDepName);
 		}
-		//at middle,just norm
-		return FileUtils.normPath(relativeDepName);
+
+
+		//construct dep module's desc
+		if (nameDescMap.get(depModuleName) != null) return depModuleName;
+
+		ModuleDesc moduleDesc = getModuleDesc(moduleName);
+		try {
+			ModuleDesc depDesc = (ModuleDesc) moduleDesc.clone();
+			depDesc.path = depDesc.base + depModuleName + ".js";
+
+			nameDescMap.put(depModuleName, depDesc);
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return depModuleName;
 	}
 
 	/**
@@ -366,7 +371,7 @@ public class Main {
 	public static void commandRunner(String[] args) throws Exception {
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals(""))
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/combo_require.properties";
+			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
 		System.out.println("load parameter from :  " + propertyFile);
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));

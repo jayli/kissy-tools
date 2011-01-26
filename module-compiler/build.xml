@@ -43,7 +43,6 @@
                            value="com.taobao.f2e.Main"/>
             </manifest>
         </jar>
-        <delete dir="${build.dir}"/>
     </target>
 
 
