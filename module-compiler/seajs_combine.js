@@ -1,3 +1,4 @@
+//combine file : d:/code/kissy_git/kissy-tools/module-compiler/test/seajs/spinning-icons/jquery.js
 /*
 Copyright 2011, SeaJS v0.4.0dev
 MIT Licensed
@@ -183,6 +184,7 @@ d.offset.initialize=d.noop},bodyOffset:function(a){var b=a.offsetTop,c=a.offsetL
 g?g[a?"pageYOffset":"pageXOffset"]:d.support.boxModel&&g.document.documentElement[c]||g.document.body[c]:f[c]}});d.each(["Height","Width"],function(a,b){var c=b.toLowerCase();d.fn["inner"+b]=function(){return this[0]?parseFloat(d.css(this[0],c,"padding")):null};d.fn["outer"+b]=function(e){return this[0]?parseFloat(d.css(this[0],c,e?"margin":"border")):null};d.fn[c]=function(e){var f=this[0];if(!f)return e==null?null:this;if(d.isFunction(e))return this.each(function(j){var k=d(this);k[c](e.call(this,
 j,k[c]()))});if(d.isWindow(f))return f.document.compatMode==="CSS1Compat"&&f.document.documentElement["client"+b]||f.document.body["client"+b];else if(f.nodeType===9)return Math.max(f.documentElement["client"+b],f.body["scroll"+b],f.documentElement["scroll"+b],f.body["offset"+b],f.documentElement["offset"+b]);else if(e===A){f=d.css(f,c);var g=parseFloat(f);return d.isNaN(g)?f:g}else return this.css(c,typeof e==="string"?e:e+"px")}})})(window);Oa.exports=jQuery;try{delete window.jQuery;delete window.$}catch(Nb){window.jQuery=
 window.$=undefined}});
+//combine file : d:/code/kissy_git/kissy-tools/module-compiler/test/seajs/spinning-icons/spinning.js
 module.declare("spinning", ["jquery"], function(require, exports, module) {
   var $ = require("jquery");
   var TRANSFORM = $.browser.webkit ? "-webkit-transform" : $.browser.mozilla ? "-moz-transform" : $.browser.opera ? "-o-transform" : "transform";
@@ -204,6 +206,7 @@ module.declare("spinning", ["jquery"], function(require, exports, module) {
   }
 });
 
+//combine file : d:/code/kissy_git/kissy-tools/module-compiler/test/seajs/spinning-icons/init.js
 module.declare("init", ["jquery", "./spinning","m1/m2"], function(require) {
   var $ = require("jquery");
   $(document).ready(function() {

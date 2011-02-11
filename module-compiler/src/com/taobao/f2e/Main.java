@@ -54,6 +54,8 @@ public class Main {
 	//map about module name and its des ,for cache
 	private HashMap<String, ModuleDesc> nameDescMap = new HashMap<String, ModuleDesc>();
 
+	private ArrayList<String> combinedFiles = new ArrayList<String>();
+
 	public void addExcludes(String[] excludes) {
 		for (String exclude : excludes) {
 			collectExclude(exclude);
@@ -116,7 +118,10 @@ public class Main {
 			}
 		} else {
 			if (output != null) {
-				FileUtils.outputContent(finalCodes.toString(), output, outputEncoding);
+				String re = "/**\n combined files : \n\n" + ArrayUtils.join(
+						combinedFiles.toArray(new String[combinedFiles.size()]), "\n")
+						+ "\n**/\n\n" + finalCodes.toString();
+				FileUtils.outputContent(re, output, outputEncoding);
 				System.out.println("success generated   :  " + output);
 			} else {
 				System.out.println(finalCodes.toString());
@@ -188,13 +193,16 @@ public class Main {
 	private void outputContent(String requiredModuleName) {
 		//first get modified code if ast modified
 		String code = moduleCodes.get(requiredModuleName);
+		ModuleDesc desc = getModuleDesc(requiredModuleName);
 		if (code == null) {
 			code = getContent(requiredModuleName);
 		} else {
-			ModuleDesc desc = getModuleDesc(requiredModuleName);
 			FileUtils.outputContent(code, desc.path, desc.encoding);
 		}
-		finalCodes.append(code);
+
+		//append path info ,easy debug
+		combinedFiles.add(new File(desc.path).getAbsolutePath());
+		finalCodes.append(code).append("\n");
 	}
 
 	private void outputCombo(String requiredModuleName) {
@@ -369,6 +377,9 @@ public class Main {
 
 
 	public static void commandRunner(String[] args) throws Exception {
+
+		System.out.println("current path : " + new File(".").getAbsolutePath());
+
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals(""))
 			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
