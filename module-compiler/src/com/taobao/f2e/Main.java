@@ -32,7 +32,7 @@ public class Main {
 	// two status : start and null
 	//if encouter start when process a module ,it must exist cyclic dependance
 	//throw error
-	private HashMap<String, String> moduleStatus = new HashMap<String, String>();
+	private HashMap<String, String> moduleStatusVisited = new HashMap<String, String>();
 
 	private StringBuffer finalCodes = new StringBuffer();
 
@@ -141,7 +141,8 @@ public class Main {
 		//check whether module's file is valid
 		ModuleDesc moduleDesc = getModuleDesc(requiredModuleName);
 		if (!new File(moduleDesc.path).exists()) {
-			System.out.println("warning : module's file not found : " + requiredModuleName);
+			System.out.println("warning : module's file not found : " + requiredModuleName
+					+ " : " + moduleDesc.path);
 			return;
 		}
 
@@ -155,7 +156,7 @@ public class Main {
 		//reduce redundant parse and recursive
 		if (genned.contains(requiredModuleName)) return;
 
-		if (moduleStatus.get(requiredModuleName) != null) {
+		if (moduleStatusVisited.get(requiredModuleName) != null) {
 			String error = "cyclic dependence : " + requiredModuleName;
 			//throw new Error(error);
 			//if silence ,just return
@@ -163,7 +164,7 @@ public class Main {
 			return;
 		}
 		//mark as start for cyclic detection
-		moduleStatus.put(requiredModuleName, "start");
+		moduleStatusVisited.put(requiredModuleName, "start");
 
 		String[] deps = getDepsAndCheckModuleName(requiredModuleName);
 		for (String dep : deps) {
@@ -175,7 +176,7 @@ public class Main {
 		}
 
 		//remove mark for cyclic detection
-		moduleStatus.remove(requiredModuleName);
+		moduleStatusVisited.remove(requiredModuleName);
 
 		genned.add(requiredModuleName);
 
@@ -266,7 +267,9 @@ public class Main {
 		String path = "";
 		for (String baseUrl : baseUrls) {
 			path = baseUrl + r;
-			if (new File(path).exists()) break;
+			if (new File(path).exists()) {
+				break;
+			}
 		}
 		return path;
 	}
@@ -304,26 +307,12 @@ public class Main {
 			//at middle,just norm
 			depModuleName = FileUtils.normPath(relativeDepName);
 		}
-
-
-		//construct dep module's desc
-		if (nameDescMap.get(depModuleName) != null) return depModuleName;
-
-		ModuleDesc moduleDesc = getModuleDesc(moduleName);
-		try {
-			ModuleDesc depDesc = (ModuleDesc) moduleDesc.clone();
-			depDesc.path = depDesc.base + depModuleName + ".js";
-
-			nameDescMap.put(depModuleName, depDesc);
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
 		return depModuleName;
 	}
 
 	/**
 	 * @param moduleName module's name
-	 * @param root	   module ast's root node
+	 * @param root module ast's root node
 	 * @return normalized dep names
 	 */
 	protected String[] getDeps(String moduleName, Node root) {
@@ -381,8 +370,10 @@ public class Main {
 		System.out.println("current path : " + new File(".").getAbsolutePath());
 
 		String propertyFile = args.length > 0 ? args[0] : "";
-		if (propertyFile.equals(""))
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
+		if (propertyFile.equals("")) {
+			propertyFile = "d:/code/kissy_git/demo/biz_require.properties";
+			//propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
+		}
 		System.out.println("load parameter from :  " + propertyFile);
 		Properties p = new Properties();
 		p.load(new FileReader(propertyFile));
