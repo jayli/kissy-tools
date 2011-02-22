@@ -20,13 +20,18 @@ public class Seajs extends Main {
 		Node getProp = root.getFirstChild().getFirstChild().getFirstChild();
 		Node moduleNameNode = getProp.getNext();
 		Node requireNode = moduleNameNode.getNext();
+		/**
+		 * module.declare('xx',['y1','y2'],function(){
+		 * });
+		 */
 		if (requireNode.getType() == Token.ARRAYLIT) {
 			Node first = requireNode.getFirstChild();
 			while (first != null) {
 				/**
 				 * depName can be relative ./ , ../
 				 */
-				re.add(getDepModuleName(moduleName, first.getString()));
+				re.add(getDepModuleName(moduleName,
+						ModuleUtils.filterModuleName(first.getString())));
 				first = first.getNext();
 			}
 		} else if (requireNode.getType() == Token.FUNCTION) {
@@ -61,7 +66,7 @@ public class Seajs extends Main {
 					Node dep = name.getNext();
 					if (dep != null && dep.getType() == Token.STRING) {
 						//keep dep name still when modify ast
-						re.add(dep.getString());
+						re.add(ModuleUtils.filterModuleName(dep.getString()));
 					}
 				}
 			}

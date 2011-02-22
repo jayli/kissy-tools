@@ -312,7 +312,7 @@ public class Main {
 
 	/**
 	 * @param moduleName module's name
-	 * @param root module ast's root node
+	 * @param root	   module ast's root node
 	 * @return normalized dep names
 	 */
 	protected String[] getDeps(String moduleName, Node root) {
@@ -321,6 +321,11 @@ public class Main {
 		if (r.getType() == Token.OBJECTLIT) {
 			Node first = r.getFirstChild();
 			while (first != null) {
+				/**
+				 * KISSY.add("xx",function(){},{
+				 * 	requires:["y1","y2"]
+				 * });
+				 */
 				if (first.getString().equals("requires")) {
 					Node list = first.getFirstChild();
 					if (list.getType() == Token.ARRAYLIT) {
@@ -329,7 +334,8 @@ public class Main {
 							/**
 							 * depName can be relative ./ , ../
 							 */
-							re.add(getDepModuleName(moduleName, fl.getString()));
+							re.add(getDepModuleName(moduleName,
+									ModuleUtils.filterModuleName(fl.getString())));
 							fl = fl.getNext();
 						}
 					}
