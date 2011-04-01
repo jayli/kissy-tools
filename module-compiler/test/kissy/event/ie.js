@@ -1,5 +1,3 @@
-KISSY.add(function(){
+KISSY.add("event/ie", function() {
+}, {requires:["./base"]});
 
-},{
-    requires:['./base']
-});

@@ -2,6 +2,7 @@ package com.taobao.f2e;
 
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
+import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -373,12 +374,11 @@ public class Main {
 
 	public static void commandRunner(String[] args) throws Exception {
 
-		System.out.println("current path : " + new File(".").getAbsolutePath());
-
 		String propertyFile = args.length > 0 ? args[0] : "";
 		if (propertyFile.equals("")) {
-			propertyFile = "d:/code/kissy_git/demo/biz_require.properties";
+			//propertyFile = "d:/code/kissy_git/demo/biz_require.properties";
 			//propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
+			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/kissy_require.properties";
 		}
 		System.out.println("load parameter from :  " + propertyFile);
 		Properties p = new Properties();
@@ -433,8 +433,77 @@ public class Main {
 		System.out.println(m.getDepModuleName("event", "./dom").equals("dom"));
 	}
 
+	public static void commandRunnerCLI(String[] args) throws Exception {
+
+
+		Options options = new Options();
+		options.addOption("mainClass", true, "main class to run");
+		options.addOption("encodings", true, "baseUrls's encodings");
+		options.addOption("baseUrls", true, "baseUrls");
+		options.addOption("requires", true, "requires");
+		options.addOption("excludes", true, "excludes");
+		options.addOption("output", true, "output");
+		options.addOption("outputEncoding", true, "outputEncoding");
+		options.addOption("outputEncoding", true, "outputCombo");
+		// create the command line parser
+		CommandLineParser parser = new GnuParser();
+		CommandLine line;
+		try {
+			// parse the command line arguments
+			line = parser.parse(options, args);
+		} catch (ParseException exp) {
+			System.out.println("Unexpected exception:" + exp.getMessage());
+			return;
+		}
+
+
+		String mainClass = line.getOptionValue("mainClass");
+		if (mainClass == null)
+			mainClass = "com.taobao.f2e.Main";
+		Main m = (Main) Class.forName(mainClass).newInstance();
+		String encodingStr = line.getOptionValue("encodings");
+		if (encodingStr != null) {
+			m.setEncodings(encodingStr.split(","));
+		}
+		String baseUrlStr = line.getOptionValue("baseUrls");
+		if (baseUrlStr != null) {
+			m.setBaseUrls(baseUrlStr.split(","));
+		}
+
+		String requireStr = line.getOptionValue("requires");
+		if (requireStr != null) {
+			m.setRequires(requireStr.split(","));
+		}
+
+		String excludeStr = line.getOptionValue("excludes");
+		if (excludeStr != null) {
+			m.addExcludes(excludeStr.split(","));
+		}
+
+		m.setOutput(line.getOptionValue("output"));
+
+		String outputEncoding = line.getOptionValue("outputEncoding");
+		if (outputEncoding != null) {
+			m.setOutputEncoding(outputEncoding);
+		}
+
+
+		String outputCombo = line.getOptionValue("outputCombo");
+		if (outputCombo != null) {
+			m.setOutputCombo(true);
+		}
+
+		m.run();
+
+	}
+
 	public static void main(String[] args) throws Exception {
+		System.out.println("current path : " + new File(".").getAbsolutePath());
 		//testGetDepModuleName();
-		commandRunner(args);
+		if (args.length <= 1) {
+			commandRunner(args);
+		} else {
+			commandRunnerCLI(args);
+		}
 	}
 }
