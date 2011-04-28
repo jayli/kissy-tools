@@ -47,6 +47,9 @@ public class Main {
 	//module name as key
 	protected HashMap<String, String> moduleCodes = new HashMap<String, String>();
 
+	// whether write module def with module name to code file
+	protected boolean fixModuleName = false;
+
 
 	private boolean outputCombo = false;
 
@@ -79,6 +82,13 @@ public class Main {
 		this.encodings = encodings;
 	}
 
+	public boolean isFixModuleName() {
+		return fixModuleName;
+	}
+
+	public void setFixModuleName(boolean fixModuleName) {
+		this.fixModuleName = fixModuleName;
+	}
 
 	public void setRequires(String[] requires) {
 		this.requires = requires;
@@ -147,7 +157,7 @@ public class Main {
 			return;
 		}
 
-		//if sepcify exclude this module ,just return
+		//if specify exclude this module ,just return
 		if (excludes.contains(requiredModuleName)) return;
 
 
@@ -198,7 +208,7 @@ public class Main {
 		ModuleDesc desc = getModuleDesc(requiredModuleName);
 		if (code == null) {
 			code = getContent(requiredModuleName);
-		} else {
+		} else if (fixModuleName) {
 			FileUtils.outputContent(code, desc.path, desc.encoding);
 		}
 
@@ -211,7 +221,7 @@ public class Main {
 		//first get modified code if ast modified
 		String code = moduleCodes.get(requiredModuleName);
 		ModuleDesc desc = getModuleDesc(requiredModuleName);
-		if (code != null) {
+		if (code != null && fixModuleName) {
 			FileUtils.outputContent(code, desc.path, desc.encoding);
 		}
 
@@ -396,6 +406,11 @@ public class Main {
 			m.setBaseUrls(baseUrlStr.split(","));
 		}
 
+		String fixModuleName = p.getProperty("fixModuleName");
+		if (fixModuleName != null) {
+			m.setFixModuleName(true);
+		}
+
 		String requireStr = p.getProperty("requires");
 		if (requireStr != null) {
 			m.setRequires(requireStr.split(","));
@@ -445,6 +460,7 @@ public class Main {
 		options.addOption("output", true, "output");
 		options.addOption("outputEncoding", true, "outputEncoding");
 		options.addOption("outputEncoding", true, "outputCombo");
+		options.addOption("fixModuleName", true, "fixModuleName");
 		// create the command line parser
 		CommandLineParser parser = new GnuParser();
 		CommandLine line;
@@ -458,8 +474,11 @@ public class Main {
 
 
 		String mainClass = line.getOptionValue("mainClass");
-		if (mainClass == null)
+		if (mainClass == null) {
 			mainClass = "com.taobao.f2e.Main";
+		}
+
+
 		Main m = (Main) Class.forName(mainClass).newInstance();
 		String encodingStr = line.getOptionValue("encodings");
 		if (encodingStr != null) {
@@ -468,6 +487,11 @@ public class Main {
 		String baseUrlStr = line.getOptionValue("baseUrls");
 		if (baseUrlStr != null) {
 			m.setBaseUrls(baseUrlStr.split(","));
+		}
+
+		String fixModuleName = line.getOptionValue("fixModuleName");
+		if (fixModuleName != null) {
+			m.setFixModuleName(true);
 		}
 
 		String requireStr = line.getOptionValue("requires");
@@ -479,6 +503,7 @@ public class Main {
 		if (excludeStr != null) {
 			m.addExcludes(excludeStr.split(","));
 		}
+
 
 		m.setOutput(line.getOptionValue("output"));
 
