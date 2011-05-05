@@ -5,7 +5,6 @@ import com.google.javascript.rhino.Token;
 import org.apache.commons.cli.*;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.*;
 
 /**
@@ -82,10 +81,6 @@ public class Main {
 		this.encodings = encodings;
 	}
 
-	public boolean isFixModuleName() {
-		return fixModuleName;
-	}
-
 	public void setFixModuleName(boolean fixModuleName) {
 		this.fixModuleName = fixModuleName;
 	}
@@ -148,6 +143,12 @@ public class Main {
 	 * @param requiredModuleName module name required
 	 */
 	private void combineRequire(String requiredModuleName) {
+
+		// if css file, do not combine with js files
+		// !TODO generate a combined css file
+		if (requiredModuleName.endsWith(".css")) {
+			return;
+		}
 
 		//check whether module's file is valid
 		ModuleDesc moduleDesc = getModuleDesc(requiredModuleName);
@@ -382,72 +383,6 @@ public class Main {
 	}
 
 
-	public static void commandRunner(String[] args) throws Exception {
-
-		String propertyFile = args.length > 0 ? args[0] : "";
-		if (propertyFile.equals("")) {
-			//propertyFile = "d:/code/kissy_git/demo/biz_require.properties";
-			//propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/seajs_require.properties";
-			propertyFile = "d:/code/kissy_git/kissy-tools/module-compiler/kissy_require.properties";
-		}
-		System.out.println("load parameter from :  " + propertyFile);
-		Properties p = new Properties();
-		p.load(new FileReader(propertyFile));
-		String mainClass = p.getProperty("mainClass");
-		if (mainClass == null)
-			mainClass = "com.taobao.f2e.Main";
-		Main m = (Main) Class.forName(mainClass).newInstance();
-		String encodingStr = p.getProperty("encodings");
-		if (encodingStr != null) {
-			m.setEncodings(encodingStr.split(","));
-		}
-		String baseUrlStr = p.getProperty("baseUrls");
-		if (baseUrlStr != null) {
-			m.setBaseUrls(baseUrlStr.split(","));
-		}
-
-		String fixModuleName = p.getProperty("fixModuleName");
-		if (fixModuleName != null) {
-			m.setFixModuleName(true);
-		}
-
-		String requireStr = p.getProperty("requires");
-		if (requireStr != null) {
-			m.setRequires(requireStr.split(","));
-		}
-
-		String excludeStr = p.getProperty("excludes");
-		if (excludeStr != null) {
-			m.addExcludes(excludeStr.split(","));
-		}
-
-		m.setOutput(p.getProperty("output"));
-
-		String outputEncoding = p.getProperty("outputEncoding");
-		if (outputEncoding != null) {
-			m.setOutputEncoding(outputEncoding);
-		}
-
-
-		String outputCombo = p.getProperty("outputCombo");
-		if (outputCombo != null) {
-			m.setOutputCombo(true);
-		}
-
-		m.run();
-
-	}
-
-
-	public static void testGetDepModuleName() throws Exception {
-		Main m = new Main();
-		System.out.println(m.getDepModuleName("event/base", "./ie").equals("event/ie"));
-		System.out.println(m.getDepModuleName("event/base", "../dom/ie").equals("dom/ie"));
-		System.out.println(m.getDepModuleName("event/base", "dom/./ie").equals("dom/ie"));
-		System.out.println(m.getDepModuleName("event/base", "dom/../event/ie").equals("event/ie"));
-		System.out.println(m.getDepModuleName("event", "./dom").equals("dom"));
-	}
-
 	public static void commandRunnerCLI(String[] args) throws Exception {
 
 
@@ -524,11 +459,7 @@ public class Main {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("current path : " + new File(".").getAbsolutePath());
-		//testGetDepModuleName();
-		if (args.length <= 1) {
-			commandRunner(args);
-		} else {
-			commandRunnerCLI(args);
-		}
+		System.out.println("current args : " + Arrays.toString(args));
+		commandRunnerCLI(args);
 	}
 }
