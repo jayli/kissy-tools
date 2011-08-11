@@ -1,1 +1,0 @@
-java -jar module-compiler.jar seajs_require.properties
