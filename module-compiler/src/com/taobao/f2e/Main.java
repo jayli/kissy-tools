@@ -378,7 +378,12 @@ public class Main {
 	private String[] getDepsAndCheckModuleName(String moduleName) {
 		String content = getContent(moduleName);
 		Node root = AstUtils.parse(content);
-		checkModuleName(moduleName, root);
+		try {
+			checkModuleName(moduleName, root);
+		} catch (Exception e) {
+			System.out.println("error : @" + moduleName);
+			e.printStackTrace();
+		}
 		return getDeps(moduleName, root);
 	}
 
