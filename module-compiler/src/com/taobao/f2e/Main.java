@@ -16,13 +16,16 @@ import java.util.*;
 public class Main {
 
 	private String[] encodings = {"utf-8"};
+
 	private String[] baseUrls = {
 			//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/"
 	};
 
-	public void setOutputCombo(boolean outputCombo) {
-		this.outputCombo = outputCombo;
-	}
+	private String[] cdnUrls = {
+			//"http://a.tbcdn.cn/s/kissy/1.2.0/"
+	};
+
+	private boolean minSuffix = false;
 
 	//when module is generated to finalCodes,mark this module
 	//module name as key
@@ -59,6 +62,7 @@ public class Main {
 
 	private ArrayList<String> combinedFiles = new ArrayList<String>();
 
+
 	public void addExcludes(String[] excludes) {
 		for (String exclude : excludes) {
 			collectExclude(exclude);
@@ -76,6 +80,13 @@ public class Main {
 		addExcludes(depends);
 	}
 
+	public void setOutputCombo(boolean outputCombo) {
+		this.outputCombo = outputCombo;
+	}
+
+	public void setMinSuffix(boolean minSuffix) {
+		this.minSuffix = minSuffix;
+	}
 
 	public void setEncodings(String[] encodings) {
 		this.encodings = encodings;
@@ -109,6 +120,18 @@ public class Main {
 			re.add(base);
 		}
 		this.baseUrls = re.toArray(new String[re.size()]);
+	}
+
+	public void setCdnUrls(String[] cdns) {
+		ArrayList<String> re = new ArrayList<String>();
+		for (String base : cdns) {
+			base = FileUtils.escapePath(base);
+			if (!base.endsWith("/")) {
+				base += "/";
+			}
+			re.add(base);
+		}
+		this.cdnUrls = re.toArray(new String[re.size()]);
 	}
 
 	public void run() {
@@ -234,9 +257,9 @@ public class Main {
 		if (comboUrl.length() > 0) {
 			comboUrl.append(",");
 		} else {
-			comboUrl.append(desc.base).append("??");
+			comboUrl.append(desc.cdnBase).append("??");
 		}
-		comboUrl.append(requiredModuleName);
+		comboUrl.append(requiredModuleName + (minSuffix ? "-min" : "") + ".js");
 	}
 
 	/**
@@ -257,12 +280,17 @@ public class Main {
 		String path = getModuleFullPath(moduleName);
 		String baseUrl = path.replaceFirst("(?i)" + moduleName + ".js$", "");
 		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
-		if (index == -1 || index >= encodings.length) index = 0;
+		if (index == -1 || index >= encodings.length) {
+			index = 0;
+		}
 		String encoding = encodings[index];
 		ModuleDesc desc = new ModuleDesc();
 		desc.encoding = encoding;
 		desc.path = path;
 		desc.base = baseUrl;
+		if (cdnUrls.length > index) {
+			desc.cdnBase = cdnUrls[index];
+		}
 		desc.moduleName = moduleName;
 		nameDescMap.put(moduleName, desc);
 		return desc;
@@ -299,8 +327,8 @@ public class Main {
 		moduleName = FileUtils.escapePath(moduleName);
 		String depModuleName;
 		//no relative path
-		if (relativeDepName.indexOf("../") == -1
-				&& relativeDepName.indexOf("./") == -1) {
+		if (!relativeDepName.contains("../") &&
+				!relativeDepName.contains("./")) {
 			depModuleName = relativeDepName;
 
 		} else {
@@ -395,11 +423,13 @@ public class Main {
 		options.addOption("mainClass", true, "main class to run");
 		options.addOption("encodings", true, "baseUrls's encodings");
 		options.addOption("baseUrls", true, "baseUrls");
+		options.addOption("cdnUrls", true, "cdnUrls");
+		options.addOption("minSuffix", true, "minSuffix");
 		options.addOption("requires", true, "requires");
 		options.addOption("excludes", true, "excludes");
 		options.addOption("output", true, "output");
 		options.addOption("outputEncoding", true, "outputEncoding");
-		options.addOption("outputEncoding", true, "outputCombo");
+		options.addOption("outputCombo", true, "outputCombo");
 		options.addOption("fixModuleName", true, "fixModuleName");
 		// create the command line parser
 		CommandLineParser parser = new GnuParser();
@@ -429,6 +459,12 @@ public class Main {
 			m.setBaseUrls(baseUrlStr.split(","));
 		}
 
+
+		String cdnUrlsStr = line.getOptionValue("cdnUrls");
+		if (cdnUrlsStr != null) {
+			m.setCdnUrls(cdnUrlsStr.split(","));
+		}
+
 		String fixModuleName = line.getOptionValue("fixModuleName");
 		if (fixModuleName != null) {
 			m.setFixModuleName(true);
@@ -444,6 +480,10 @@ public class Main {
 			m.addExcludes(excludeStr.split(","));
 		}
 
+		String minSuffixStr = line.getOptionValue("minSuffix");
+		if (minSuffixStr != null) {
+			m.setMinSuffix(true);
+		}
 
 		m.setOutput(line.getOptionValue("output"));
 
