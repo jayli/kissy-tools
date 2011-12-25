@@ -8,7 +8,7 @@ REM =====================================
 SETLOCAL ENABLEEXTENSIONS
 
 echo.
-echo YUI Compressor v2.4.2
+echo YUI Compressor v2.4.7
 
 REM 过滤文件后缀，只压缩 js 和 css
 if "%~x1" NEQ ".js" (
