@@ -73,9 +73,7 @@ public class Main {
 	private void collectExclude(String excludeModuleName) {
 		if (excludes.contains(excludeModuleName)) return;
 		excludes.add(excludeModuleName);
-		String content = getContent(excludeModuleName);
-		Node root = AstUtils.parse(content);
-		checkModuleName(excludeModuleName, root);
+		Node root = checkModuleNameAndGetAstRoot(excludeModuleName);
 		String[] depends = getDeps(excludeModuleName, root);
 		addExcludes(depends);
 	}
@@ -391,27 +389,30 @@ public class Main {
 	 * S.add(func); -> S.add("moduleName",func);
 	 *
 	 * @param moduleName module's name
-	 * @param root	   module's root ast node
+	 * @return {Node} module's root ast node
 	 */
-	protected void checkModuleName(String moduleName, Node root) {
-		Node getProp = root.getFirstChild().getFirstChild().getFirstChild();
-		//add method's first parameter is not string，add module name automatically
-		if (getProp.getNext().getType() != Token.STRING) {
-			getProp.getParent().addChildAfter(Node.newString(moduleName), getProp);
-			//serialize ast to code cache
-			moduleCodes.put(moduleName, AstUtils.toSource(root));
+	protected Node checkModuleNameAndGetAstRoot(String moduleName) {
+		Node root = null;
+		try {
+			String content = getContent(moduleName);
+			root = AstUtils.parse(content);
+			Node getProp = root.getFirstChild().getFirstChild().getFirstChild();
+			//add method's first parameter is not string，add module name automatically
+			if (getProp.getNext().getType() != Token.STRING) {
+				getProp.getParent().addChildAfter(Node.newString(moduleName), getProp);
+				//serialize ast to code cache
+				moduleCodes.put(moduleName, AstUtils.toSource(root));
+			}
+		} catch (Exception e) {
+			System.out.println("!! format or syntax error in module : " + moduleName);
+			e.printStackTrace();
+			System.exit(1);
 		}
+		return root;
 	}
 
 	private String[] getDepsAndCheckModuleName(String moduleName) {
-		String content = getContent(moduleName);
-		Node root = AstUtils.parse(content);
-		try {
-			checkModuleName(moduleName, root);
-		} catch (Exception e) {
-			System.out.println("error : @" + moduleName);
-			e.printStackTrace();
-		}
+		Node root = checkModuleNameAndGetAstRoot(moduleName);
 		return getDeps(moduleName, root);
 	}
 
