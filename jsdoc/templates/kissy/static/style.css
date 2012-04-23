@@ -74,8 +74,8 @@ table { border-collapse: collapse; border-spacing: 0; }
 }
 
 /** 两栏布局 **/
-.layout .main-wrap { margin-left: 240px; }
-.layout .col-sub { width: 220px; margin-left: -100%; }
+.layout .main-wrap { margin-left: 280px; }
+.layout .col-sub { width: 260px; margin-left: -100%; }
 
 /*************************************************************************************
  * JSDoc
@@ -127,5 +127,21 @@ hr{margin:10px 0;height:0;overflow:hidden;border:none;border-top:1px dotted #ccc
 a.go-top:hover,
 a.go-top:active{text-decoration:none;}
 
+.navigation {
+    float:right;
+    margin-top:30px;
+}
 
+.navigation li {
+    float:left;
+    margin:0 5px;
+}
 
+#header {
+    overflow:hidden;
+    zoom:1;
+}
+
+.logo {
+    float:left;
+}
