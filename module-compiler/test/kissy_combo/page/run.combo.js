@@ -1,11 +1,11 @@
-/**
- combined files : 
+/*
+ Combined modules by KISSY Module Compiler : 
 
-D:\code\kissy_git\kissy-tools\module-compiler\test\kissy_combo\dom.js
-D:\code\kissy_git\kissy-tools\module-compiler\test\kissy_combo\uibase\position.js
-D:\code\kissy_git\kissy-tools\module-compiler\test\kissy_combo\switch.js
-D:\code\kissy_git\kissy-tools\module-compiler\test\kissy_combo\page\run.js
-**/
+ dom
+ uibase/position
+ switch
+ page/run
+*/
 
 KISSY.add("dom", function() {
 });

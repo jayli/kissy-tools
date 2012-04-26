@@ -145,9 +145,9 @@ public class Main {
 			}
 		} else {
 			if (output != null) {
-				String re = "/**\n combined files : \n\n" + ArrayUtils.join(
-						combinedFiles.toArray(new String[combinedFiles.size()]), "\n")
-						+ "\n**/\n\n" + finalCodes.toString();
+				String re = "/*\n Combined modules by KISSY Module Compiler : \n\n " + ArrayUtils.join(
+						combinedFiles.toArray(new String[combinedFiles.size()]), "\n ")
+						+ "\n*/\n\n" + finalCodes.toString();
 				FileUtils.outputContent(re, output, outputEncoding);
 				System.out.println("success generated   :  " + output);
 			} else {
@@ -234,8 +234,8 @@ public class Main {
 			FileUtils.outputContent(code, desc.path, desc.encoding);
 		}
 
-		//append path info ,easy debug
-		combinedFiles.add(new File(desc.path).getAbsolutePath());
+		//append module name info
+		combinedFiles.add(desc.moduleName);
 		finalCodes.append(code).append("\n");
 	}
 
