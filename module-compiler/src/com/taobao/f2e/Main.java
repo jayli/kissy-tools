@@ -71,11 +71,15 @@ public class Main {
 
 	//collect this module and all its dependent modules
 	private void collectExclude(String excludeModuleName) {
-		if (excludes.contains(excludeModuleName)) return;
+		if (excludes.contains(excludeModuleName)) {
+			return;
+		}
 		excludes.add(excludeModuleName);
-		Node root = checkModuleNameAndGetAstRoot(excludeModuleName);
-		String[] depends = getDeps(excludeModuleName, root);
-		addExcludes(depends);
+		if (isModuleExists(excludeModuleName)) {
+			Node root = checkModuleNameAndGetAstRoot(excludeModuleName);
+			String[] depends = getDeps(excludeModuleName, root);
+			addExcludes(depends);
+		}
 	}
 
 	public void setOutputCombo(boolean outputCombo) {
@@ -171,16 +175,14 @@ public class Main {
 			return;
 		}
 
-		//check whether module's file is valid
-		ModuleDesc moduleDesc = getModuleDesc(requiredModuleName);
-		if (!new File(moduleDesc.path).exists()) {
-			System.out.println("warning : module's file not found : " + requiredModuleName
-					+ " : " + moduleDesc.path);
-			return;
-		}
-
 		//if specify exclude this module ,just return
 		if (excludes.contains(requiredModuleName)) return;
+
+		if (!isModuleExists(requiredModuleName)) {
+			System.out.println("warning : module's file not found : " + requiredModuleName
+					+ " : " + getModuleDesc(requiredModuleName).path);
+			return;
+		}
 
 
 		//x -> a,b,c
@@ -257,7 +259,9 @@ public class Main {
 		} else {
 			comboUrl.append(desc.cdnBase).append("??");
 		}
-		comboUrl.append(requiredModuleName + (minSuffix ? "-min" : "") + ".js");
+		comboUrl.append(requiredModuleName)
+				.append(minSuffix ? "-min" : "")
+				.append(".js");
 	}
 
 	/**
@@ -268,6 +272,12 @@ public class Main {
 		//System.out.println("get file content :" + moduleName);
 		ModuleDesc desc = getModuleDesc(moduleName);
 		return FileUtils.getFileContent(desc.path, desc.encoding);
+	}
+
+	private boolean isModuleExists(String moduleName) {
+		//check whether module's file is valid
+		ModuleDesc moduleDesc = getModuleDesc(moduleName);
+		return new File(moduleDesc.path).exists();
 	}
 
 
@@ -313,7 +323,7 @@ public class Main {
 	}
 
 	/**
-	 * @param moduleName	  event/ie
+	 * @param moduleName      event/ie
 	 * @param relativeDepName 1. event/../s to s
 	 *                        2. event/./s to event/s
 	 *                        3. ../h to h
@@ -350,7 +360,7 @@ public class Main {
 
 	/**
 	 * @param moduleName module's name
-	 * @param root	   module ast's root node
+	 * @param root       module ast's root node
 	 * @return normalized dep names
 	 */
 	protected String[] getDeps(String moduleName, Node root) {
