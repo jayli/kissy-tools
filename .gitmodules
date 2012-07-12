@@ -1,0 +1,6 @@
+[submodule "front-build"]
+	path = front-build
+	url = https://github.com/maxbbn/front-build.git
+[submodule "tbuild"]
+	path = tbuild
+	url = https://github.com/czy88840616/tbuild.git

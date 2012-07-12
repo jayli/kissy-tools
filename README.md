@@ -9,6 +9,8 @@ KISSY Tools - 前端开发工具集
  - YUI Compressor:    KISSY 采用的 CSS 压缩工具
  - Ant:               自动配置、打包工具
  - iDebug:            轻松快捷的淘宝前端调试工具
+ - front-build        前端自动化工具集
+ - tbuild             模块打包工具  
  - KISSY Module Compiler: 模块依赖打包工具 <http://docs.kissyui.com/docs/html/tools/module-compiler/index.html>
 
 
