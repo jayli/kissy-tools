@@ -6,6 +6,7 @@ import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * invoke module compiler for kissy
@@ -15,71 +16,63 @@ import java.util.*;
  */
 public class Main {
 
-	private String[] encodings = {"utf-8"};
+	/**
+	 * packages.
+	 */
+	private Packages packages = new Packages();
 
-	private String[] baseUrls = {
-			//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/"
-	};
+	/**
+	 * exclude pattern for modules.
+	 */
+	private Pattern excludePattern;
 
-	private String[] cdnUrls = {
-			//"http://a.tbcdn.cn/s/kissy/1.2.0/"
-	};
-
+	/**
+	 * whether print -min at cdn combo mode.
+	 */
 	private boolean minSuffix = false;
 
-	//when module is generated to finalCodes,mark this module
-	//module name as key
-	private HashSet<String> genned = new HashSet<String>();
+	/**
+	 * stack of visited modules to detect circular dependency
+	 */
+	private ArrayList<String> modulesVisited = new ArrayList<String>();
 
-
-	// two status : start and null
-	//if encouter start when process a module ,it must exist cyclic dependance
-	//throw error
-	private HashMap<String, String> moduleStatusVisited = new HashMap<String, String>();
-
-	private StringBuffer finalCodes = new StringBuffer();
-
+	/**
+	 * requires mods name for current application.
+	 */
 	private String[] requires = new String[0];
-	private HashSet<String> excludes = new HashSet<String>();
 
+	/**
+	 * combined mods 's code 's output file path.
+	 */
 	private String output = "";//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/combine.js";
+
+	/**
+	 * combined mods 's code 's output file encoding.
+	 */
 	private String outputEncoding = "utf-8";
 
-	//when module ast modified , serialized code goes here
-	//module name as key
-	protected HashMap<String, String> moduleCodes = new HashMap<String, String>();
+	/**
+	 * all processed modules.
+	 */
+	protected ArrayList<Module> modules = new ArrayList<Module>();
 
-	// whether write module def with module name to code file
-	protected boolean fixModuleName = false;
+	/**
+	 * whether overwrite module's file with module name added.
+	 */
+	private boolean fixModuleName = false;
 
-
+	/**
+	 * whether enable combo mode.
+	 */
 	private boolean outputCombo = false;
 
+	/**
+	 * all combo ed urls grouped by package.
+	 */
 	private HashMap<String, StringBuffer> comboUrls = new HashMap<String, StringBuffer>();
 
-	//map about module name and its des ,for cache
-	private HashMap<String, ModuleDesc> nameDescMap = new HashMap<String, ModuleDesc>();
-
-	private ArrayList<String> combinedFiles = new ArrayList<String>();
-
-
-	public void addExcludes(String[] excludes) {
-		for (String exclude : excludes) {
-			collectExclude(exclude);
-		}
-	}
-
-	//collect this module and all its dependent modules
-	private void collectExclude(String excludeModuleName) {
-		if (excludes.contains(excludeModuleName)) {
-			return;
-		}
-		excludes.add(excludeModuleName);
-		if (isModuleExists(excludeModuleName)) {
-			Node root = checkModuleNameAndGetAstRoot(excludeModuleName);
-			String[] depends = getDeps(excludeModuleName, root);
-			addExcludes(depends);
-		}
+	public void setExcludePattern(Pattern excludePattern) {
+		this.excludePattern = excludePattern;
 	}
 
 	public void setOutputCombo(boolean outputCombo) {
@@ -88,10 +81,6 @@ public class Main {
 
 	public void setMinSuffix(boolean minSuffix) {
 		this.minSuffix = minSuffix;
-	}
-
-	public void setEncodings(String[] encodings) {
-		this.encodings = encodings;
 	}
 
 	public void setFixModuleName(boolean fixModuleName) {
@@ -107,58 +96,50 @@ public class Main {
 		this.output = output;
 	}
 
+	public Packages getPackages() {
+		return packages;
+	}
 
 	public void setOutputEncoding(String outputEncoding) {
 		this.outputEncoding = outputEncoding;
 	}
 
-	public void setBaseUrls(String[] bases) {
-		ArrayList<String> re = new ArrayList<String>();
-		for (String base : bases) {
-			base = FileUtils.escapePath(base);
-			if (!base.endsWith("/")) {
-				base += "/";
-			}
-			re.add(base);
-		}
-		this.baseUrls = re.toArray(new String[re.size()]);
-	}
-
-	public void setCdnUrls(String[] cdns) {
-		ArrayList<String> re = new ArrayList<String>();
-		for (String base : cdns) {
-			base = FileUtils.escapePath(base);
-			if (!base.endsWith("/")) {
-				base += "/";
-			}
-			re.add(base);
-		}
-		this.cdnUrls = re.toArray(new String[re.size()]);
-	}
-
 	public void run() {
+
+		long start = System.currentTimeMillis();
+
 		for (String requiredModuleName : requires) {
 			combineRequire(requiredModuleName);
 		}
 
-		//combo need to handled seperately for each base
+		//combo need to handled separately for each base
 		if (outputCombo) {
 			Set<String> keys = comboUrls.keySet();
 			for (String key : keys) {
 				System.out.println(comboUrls.get(key).toString());
 			}
 		} else {
+			ArrayList<String> combinedFiles = new ArrayList<String>();
+			StringBuilder finalCodes = new StringBuilder();
+
+			for (Module m : modules) {
+				combinedFiles.add(m.getName());
+				finalCodes.append(m.getCode());
+			}
+
+			String re = "/*\n Combined modules by KISSY Module Compiler: \n\n " +
+					ArrayUtils.join(combinedFiles.toArray(new String[combinedFiles.size()]), "\n ")
+					+ "\n*/\n\n" + finalCodes.toString();
+
 			if (output != null) {
-				String re = "/*\n Combined modules by KISSY Module Compiler : \n\n " + ArrayUtils.join(
-						combinedFiles.toArray(new String[combinedFiles.size()]), "\n ")
-						+ "\n*/\n\n" + finalCodes.toString();
 				FileUtils.outputContent(re, output, outputEncoding);
-				System.out.println("success generated   :  " + output);
+				System.out.println("success generated:  " + output);
 			} else {
-				System.out.println(finalCodes.toString());
+				System.out.println(re);
 			}
 		}
 
+		System.out.print("duration: " + (System.currentTimeMillis() - start));
 	}
 
 	/**
@@ -175,270 +156,119 @@ public class Main {
 			return;
 		}
 
-		//if specify exclude this module ,just return
-		if (excludes.contains(requiredModuleName)) return;
-
-		if (!isModuleExists(requiredModuleName)) {
-			System.out.println("warning : module's file not found : " + requiredModuleName
-					+ " : " + getModuleDesc(requiredModuleName).path);
+		// if specify exclude this module, just return
+		if (excludePattern != null &&
+				excludePattern.matcher(requiredModuleName).matches()) {
 			return;
 		}
 
+		Module requiredModule = packages.getModule(requiredModuleName);
+
+		if (!requiredModule.isModuleExists()) {
+			System.out.println("warning  module's file not found: " + requiredModuleName
+					+ ": " + requiredModule.getFullpath());
+			return;
+		}
+
+		if (requiredModule.getAstRoot() == null) {
+			System.out.println("!! format or syntax error in module: " + requiredModule.getFullpath());
+			System.exit(1);
+		}
 
 		//x -> a,b,c
 		//a -> b
-		//when requiredModuleName=x and encouter b ,just return
+		//when requiredModuleName=x and encounter b ,just return
 		//reduce redundant parse and recursive
-		if (genned.contains(requiredModuleName)) return;
-
-		if (moduleStatusVisited.get(requiredModuleName) != null) {
-			String error = "cyclic dependence : " + requiredModuleName;
-			//throw new Error(error);
-			//if silence ,just return
-			System.out.println("warning : " + error);
+		if (modules.contains(requiredModule)) {
 			return;
 		}
-		//mark as start for cyclic detection
-		moduleStatusVisited.put(requiredModuleName, "start");
 
-		String[] deps = getDepsAndCheckModuleName(requiredModuleName);
-		for (String dep : deps) {
-			combineRequire(dep);
+		if (modulesVisited.contains(requiredModuleName)) {
+			String error = "cyclic dependence: " +
+					ArrayUtils.join(modulesVisited.toArray(new String[modulesVisited.size()]),
+							",") + "," + requiredModuleName;
+			//if silence ,just return
+			System.out.println("error: " + error);
+			System.exit(1);
+			return;
 		}
 
-		if (genned.contains(requiredModuleName)) {
-			throw new Error("it must not happen");
+		//mark as start for cyclic detection
+		modulesVisited.add(requiredModuleName);
+
+		completeModuleName(requiredModule);
+
+		String[] requires = requiredModule.getRequires();
+
+		for (String require : requires) {
+			combineRequire(require);
 		}
 
 		//remove mark for cyclic detection
-		moduleStatusVisited.remove(requiredModuleName);
+		modulesVisited.remove(modulesVisited.size()-1);
 
-		genned.add(requiredModuleName);
+		modules.add(requiredModule);
 
-		if (this.outputCombo) {
+		if (fixModuleName && !requiredModule.isWithModuleName()) {
+			requiredModule.updateCodeToFile();
+		}
+
+		if (outputCombo) {
 			//generate combo url by each base
-			outputCombo(requiredModuleName);
-		} else {
-			//just append this file's content
-			outputContent(requiredModuleName);
+			outputCombo(requiredModule);
 		}
 
 	}
 
+	private void outputCombo(Module module) {
 
-	private void outputContent(String requiredModuleName) {
-		//first get modified code if ast modified
-		String code = moduleCodes.get(requiredModuleName);
-		ModuleDesc desc = getModuleDesc(requiredModuleName);
-		if (code == null) {
-			code = getContent(requiredModuleName);
-		} else if (fixModuleName) {
-			FileUtils.outputContent(code, desc.path, desc.encoding);
+		if (!comboUrls.containsKey(module.getPackageBase())) {
+			comboUrls.put(module.getPackageBase(), new StringBuffer());
 		}
 
-		//append module name info
-		combinedFiles.add(desc.moduleName);
-		finalCodes.append(code).append("\n");
-	}
+		StringBuffer comboUrl = comboUrls.get(module.getPackageBase());
 
-	private void outputCombo(String requiredModuleName) {
-		//first get modified code if ast modified
-		String code = moduleCodes.get(requiredModuleName);
-		ModuleDesc desc = getModuleDesc(requiredModuleName);
-		if (code != null && fixModuleName) {
-			FileUtils.outputContent(code, desc.path, desc.encoding);
-		}
-
-		if (!comboUrls.containsKey(desc.base)) {
-			comboUrls.put(desc.base, new StringBuffer());
-		}
-
-		StringBuffer comboUrl = comboUrls.get(desc.base);
 		if (comboUrl.length() > 0) {
 			comboUrl.append(",");
 		} else {
-			comboUrl.append(desc.cdnBase).append("??");
+			comboUrl.append(module.getPackageCdnBase()).append("??");
 		}
-		comboUrl.append(requiredModuleName)
+
+		comboUrl.append(module.getName())
 				.append(minSuffix ? "-min" : "")
 				.append(".js");
 	}
 
 	/**
-	 * @param moduleName must be absolute
-	 * @return {String|null} module's code,null表示出错（文件不存在？）
-	 */
-	private String getContent(String moduleName) {
-		//System.out.println("get file content :" + moduleName);
-		ModuleDesc desc = getModuleDesc(moduleName);
-		return FileUtils.getFileContent(desc.path, desc.encoding);
-	}
-
-	private boolean isModuleExists(String moduleName) {
-		//check whether module's file is valid
-		ModuleDesc moduleDesc = getModuleDesc(moduleName);
-		return new File(moduleDesc.path).exists();
-	}
-
-
-	private ModuleDesc getModuleDesc(String moduleName) {
-		if (nameDescMap.get(moduleName) != null)
-			return nameDescMap.get(moduleName);
-
-		String path = getModuleFullPath(moduleName);
-		String baseUrl = path.replaceFirst("(?i)" + moduleName + ".js$", "");
-		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
-		if (index == -1 || index >= encodings.length) {
-			index = 0;
-		}
-		String encoding = encodings[index];
-		ModuleDesc desc = new ModuleDesc();
-		desc.encoding = encoding;
-		desc.path = path;
-		desc.base = baseUrl;
-		if (cdnUrls.length > index) {
-			desc.cdnBase = cdnUrls[index];
-		}
-		desc.moduleName = moduleName;
-		nameDescMap.put(moduleName, desc);
-		return desc;
-	}
-
-	private String getModuleFullPath(String moduleName) {
-		String r = FileUtils.escapePath(moduleName);
-		if (r.charAt(0) == '/') {
-			r = r.substring(1);
-		}
-		if (!r.endsWith(".js") && !r.endsWith(".JS")) {
-			r += ".js";
-		}
-		String path = "";
-		for (String baseUrl : baseUrls) {
-			path = baseUrl + r;
-			if (new File(path).exists()) {
-				break;
-			}
-		}
-		return path;
-	}
-
-	/**
-	 * @param moduleName      event/ie
-	 * @param relativeDepName 1. event/../s to s
-	 *                        2. event/./s to event/s
-	 *                        3. ../h to h
-	 *                        4. ./h to event/h
-	 * @return dep's normal path
-	 */
-	protected String getDepModuleName(String moduleName, String relativeDepName) {
-		relativeDepName = FileUtils.escapePath(relativeDepName);
-		moduleName = FileUtils.escapePath(moduleName);
-		String depModuleName;
-		//no relative path
-		if (!relativeDepName.contains("../") &&
-				!relativeDepName.contains("./")) {
-			depModuleName = relativeDepName;
-
-		} else {
-			//at start,consider moduleName
-			if (relativeDepName.indexOf("../") == 0
-					|| relativeDepName.indexOf("./") == 0) {
-				int lastSlash = moduleName.lastIndexOf("/");
-				String archor = moduleName;
-				if (lastSlash == -1) {
-					archor = "";
-				} else {
-					archor = archor.substring(0, lastSlash + 1);
-				}
-				return FileUtils.normPath(archor + relativeDepName);
-			}
-			//at middle,just norm
-			depModuleName = FileUtils.normPath(relativeDepName);
-		}
-		return depModuleName;
-	}
-
-	/**
-	 * @param moduleName module's name
-	 * @param root       module ast's root node
-	 * @return normalized dep names
-	 */
-	protected String[] getDeps(String moduleName, Node root) {
-		ArrayList<String> re = new ArrayList<String>();
-		Node r = root.getFirstChild().getFirstChild().getLastChild();
-		if (r.getType() == Token.OBJECTLIT) {
-			Node first = r.getFirstChild();
-			while (first != null) {
-				/**
-				 * KISSY.add("xx",function(){},{
-				 * 	requires:["y1","y2"]
-				 * });
-				 */
-				if (first.getString().equals("requires")) {
-					Node list = first.getFirstChild();
-					if (list.getType() == Token.ARRAYLIT) {
-						Node fl = list.getFirstChild();
-						while (fl != null) {
-							/**
-							 * depName can be relative ./ , ../
-							 */
-							re.add(getDepModuleName(moduleName,
-									ModuleUtils.filterModuleName(fl.getString())));
-							fl = fl.getNext();
-						}
-					}
-					break;
-				}
-				first = first.getNext();
-			}
-		}
-		return re.toArray(new String[re.size()]);
-	}
-
-	/**
 	 * S.add(func); -> S.add("moduleName",func);
-	 *
-	 * @param moduleName module's name
-	 * @return {Node} module's root ast node
+	 * @param module
 	 */
-	protected Node checkModuleNameAndGetAstRoot(String moduleName) {
-		Node root = null;
-		try {
-			String content = getContent(moduleName);
-			root = AstUtils.parse(content);
-			Node getProp = root.getFirstChild().getFirstChild().getFirstChild();
-			//add method's first parameter is not string，add module name automatically
-			if (getProp.getNext().getType() != Token.STRING) {
-				getProp.getParent().addChildAfter(Node.newString(moduleName), getProp);
-				//serialize ast to code cache
-				moduleCodes.put(moduleName, AstUtils.toSource(root));
-			}
-		} catch (Exception e) {
-			System.out.println("!! format or syntax error in module : " + moduleName);
-			e.printStackTrace();
-			System.exit(1);
+	private void completeModuleName(Module module) {
+		Node moduleNameNode = module.getModuleNameNode();
+		if (moduleNameNode.getType() != Token.STRING) {
+			moduleNameNode.addChildAfter(Node.newString(module.getName()),
+					moduleNameNode.getParent().getChildBefore(moduleNameNode));
+			module.setWithModuleName(false);
+			module.setCode(AstUtils.toSource(module.getAstRoot()));
+		} else {
+			module.setWithModuleName(true);
+			module.setCode(module.getContent());
 		}
-		return root;
 	}
-
-	private String[] getDepsAndCheckModuleName(String moduleName) {
-		Node root = checkModuleNameAndGetAstRoot(moduleName);
-		return getDeps(moduleName, root);
-	}
-
 
 	public static void commandRunnerCLI(String[] args) throws Exception {
 
-
 		Options options = new Options();
-		options.addOption("mainClass", true, "main class to run");
-		options.addOption("encodings", true, "baseUrls's encodings");
+		options.addOption("encodings", true, "baseUrls 's encodings");
 		options.addOption("baseUrls", true, "baseUrls");
 		options.addOption("cdnUrls", true, "cdnUrls");
 		options.addOption("minSuffix", true, "minSuffix");
 		options.addOption("requires", true, "requires");
-		options.addOption("excludes", true, "excludes");
+		options.addOption("excludeReg", true, "excludeReg");
 		options.addOption("output", true, "output");
+
+		options.addOption("v", "version", false, "version");
+
 		options.addOption("outputEncoding", true, "outputEncoding");
 		options.addOption("outputCombo", true, "outputCombo");
 		options.addOption("fixModuleName", true, "fixModuleName");
@@ -453,27 +283,28 @@ public class Main {
 			return;
 		}
 
-
-		String mainClass = line.getOptionValue("mainClass");
-		if (mainClass == null) {
-			mainClass = "com.taobao.f2e.Main";
+		if (line.hasOption("v")) {
+			System.out.println("KISSY Module Compiler 2.0");
+			return;
 		}
 
+		Main m = new Main();
 
-		Main m = (Main) Class.forName(mainClass).newInstance();
+		Packages packages = m.getPackages();
+
 		String encodingStr = line.getOptionValue("encodings");
 		if (encodingStr != null) {
-			m.setEncodings(encodingStr.split(","));
+			packages.setEncodings(encodingStr.split(","));
 		}
 		String baseUrlStr = line.getOptionValue("baseUrls");
 		if (baseUrlStr != null) {
-			m.setBaseUrls(baseUrlStr.split(","));
+			packages.setBaseUrls(baseUrlStr.split(","));
 		}
 
 
 		String cdnUrlsStr = line.getOptionValue("cdnUrls");
 		if (cdnUrlsStr != null) {
-			m.setCdnUrls(cdnUrlsStr.split(","));
+			packages.setCdnUrls(cdnUrlsStr.split(","));
 		}
 
 		String fixModuleName = line.getOptionValue("fixModuleName");
@@ -486,9 +317,9 @@ public class Main {
 			m.setRequires(requireStr.split(","));
 		}
 
-		String excludeStr = line.getOptionValue("excludes");
-		if (excludeStr != null) {
-			m.addExcludes(excludeStr.split(","));
+		String excludeReg = line.getOptionValue("excludeReg");
+		if (excludeReg != null) {
+			m.setExcludePattern(Pattern.compile(excludeReg));
 		}
 
 		String minSuffixStr = line.getOptionValue("minSuffix");
@@ -514,8 +345,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("current path : " + new File(".").getAbsolutePath());
-		System.out.println("current args : " + Arrays.toString(args));
+		System.out.println("current path: " + new File(".").getAbsolutePath());
+		System.out.println("current args: " + Arrays.toString(args));
 		commandRunnerCLI(args);
 	}
 }

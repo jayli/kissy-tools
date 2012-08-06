@@ -1,11 +1,17 @@
 package com.taobao.f2e;
 
 
-public class Test {
-	public static void main(String[] args) {
-		System.out.println("xX".replaceAll("(?i)x",""));
+import java.util.regex.Pattern;
 
-		System.out.println("y/z?xxx".replaceAll("\\?.*$",""));
-		System.out.println("y/z".replaceAll("\\?.*$",""));
+public class Test {
+
+	static void prepare() {
+		Main main = new Main();
+		main.setOutput("../test/kissy_combo/page/run.combo.js");
+		main.setRequires(new String[]{"page/run"});
+	}
+
+	public static void main(String[] args) {
+		System.out.println(Pattern.compile("ua(?:/.*)?$").matcher("ua").matches());
 	}
 }
