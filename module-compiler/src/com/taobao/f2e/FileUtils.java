@@ -67,18 +67,27 @@ public class FileUtils {
 	 */
 	public static String normPath(String path) {
 		path = escapePath(path);
+
 		String[] paths = path.split("/");
 		ArrayList<String> re = new ArrayList<String>();
 		for (String p : paths) {
-			if (p.equals(".")) continue;
-			else if (p.equals("..")) re.remove(re.size() - 1);
-			else re.add(p);
+			if (p.length() > 0) {
+				if (p.equals(".")) {
+				} else if (p.equals("..")) {
+					re.remove(re.size() - 1);
+				} else {
+					re.add(p);
+				}
+			}
 		}
-		return ArrayUtils.join(re.toArray(new String[re.size()]), "/");
+		return ArrayUtils.join(re.toArray(new String[re.size()]), "/") +
+				// 避免本身 path 带 / 后缀
+				(path.endsWith("/") ? "/" : "");
 	}
 
 
 	public static void main(String[] args) {
 		System.out.println(normPath("event/./../h/../s"));
+		System.out.println(normPath("event/./../h/../s/"));
 	}
 }
