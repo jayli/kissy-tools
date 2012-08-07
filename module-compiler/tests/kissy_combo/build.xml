@@ -77,8 +77,8 @@ build example for kissy loader
                     <arg value="-encodings"/>
                     <arg value="${charset}"/>
 
-                    <arg value="-nameMap"/>
-                    <arg value="event(/.*)?|event,dom(/.*)?|dom"/>
+                    <!--<arg value="-nameMap"/>-->
+                    <!--<arg value="event(/.*)?||event,,dom(/.*)?|dom"/>-->
 
                     <arg value="-outputEncoding"/>
                     <arg value="utf-8"/>

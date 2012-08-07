@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  * Extract dependencies from code files.
  *
  * @author yiminghe@gmail.com
+ * @since 2012-08-07
  */
 public class ExtractDependency {
 
@@ -268,8 +269,10 @@ public class ExtractDependency {
 		Set<String> keys = dependencyCode.keySet();
 		for (String name : keys) {
 			ArrayList<String> requires = dependencyCode.get(name);
-			codes.add("'" + name + "': {requires: ['" +
-					ArrayUtils.join(requires.toArray(new String[requires.size()]), "', '") + "']}");
+			if (requires.size() > 0) {
+				codes.add("'" + name + "': {requires: ['" +
+						ArrayUtils.join(requires.toArray(new String[requires.size()]), "', '") + "']}");
+			}
 		}
 		return codes;
 	}
@@ -386,11 +389,13 @@ public class ExtractDependency {
 
 		String excludeReg = line.getOptionValue("excludeReg");
 		if (excludeReg != null) {
+			excludeReg=excludeReg.replaceAll("\\s","");
 			m.setExcludePattern(Pattern.compile(excludeReg));
 		}
 
 		String includeReg = line.getOptionValue("includeReg");
 		if (includeReg != null) {
+			includeReg=includeReg.replaceAll("\\s","");
 			m.setIncludePattern(Pattern.compile(includeReg));
 		}
 
@@ -412,9 +417,9 @@ public class ExtractDependency {
 	}
 
 	static void constructNameMapFromString(String nameMapStr, HashMap<String, Pattern> nameMap) {
-		String[] names = nameMapStr.split(",");
+		String[] names = nameMapStr.split(",,");
 		for (String n : names) {
-			String[] ns = n.split("\\|");
+			String[] ns = n.split("\\|\\|");
 			nameMap.put(ns[1], Pattern.compile(ns[0]));
 		}
 	}
@@ -456,24 +461,56 @@ public class ExtractDependency {
 		System.out.println("duration: " + (System.currentTimeMillis() - start));
 	}
 
+	public static void testMain() throws Exception {
+
+		ExtractDependency m = new ExtractDependency();
+		String path;
+		path = ExtractDependency.class.getResource("/").getFile() + "../../../tests/kissy_combo/";
+		System.out.println(new File(path).getCanonicalPath());
+		m.getPackages().setBaseUrls(new String[]{
+				FileUtils.escapePath(new File(path).getCanonicalPath())
+		});
+		m.setOutput(path + "deps.js");
+		m.setOutputEncoding("utf-8");
+
+		String deps = "([\\w-]+)(?:/.*)?||$1";
+
+
+		constructNameMapFromString(deps, m.nameMap);
+
+		m.run();
+	}
+
+
+	public static void testKISSY() throws Exception {
+
+		ExtractDependency m = new ExtractDependency();
+		String path;
+
+		path = "d:\\code\\kissy_git\\kissy\\src\\";
+		m.getPackages().setBaseUrls(new String[]{
+				path
+		});
+		m.setOutput(path + "seed/src/dependency.js");
+		m.setOutputEncoding("utf-8");
+		m.getPackages().setEncodings(new String[]{
+				"utf-8"
+		});
+
+		String deps = "([\\w-]+)(?:/.*)?||$1";
+
+		constructNameMapFromString(deps, m.nameMap);
+
+		m.setIncludePattern(Pattern.compile("dom(/.*)?"));
+
+		m.run();
+	}
+
 	public static void main(String[] args) throws Exception {
 		commandRunnerCLI(args);
-		if (System.currentTimeMillis() < 9) {
-			ExtractDependency m = new ExtractDependency();
-			String path;
-			path = ExtractDependency.class.getResource("/").getFile() + "../../../tests/kissy_combo/";
-			System.out.println(new File(path).getCanonicalPath());
-			m.getPackages().setBaseUrls(new String[]{
-					FileUtils.escapePath(new File(path).getCanonicalPath())
-			});
-			m.setOutput(path + "deps.js");
-			m.setOutputEncoding("utf-8");
 
-			String deps = "event(/.*)?|event,dom(/.*)?|dom";
+		//testMain();
 
-			constructNameMapFromString(deps, m.nameMap);
-
-			m.run();
-		}
+		//testKISSY();
 	}
 }

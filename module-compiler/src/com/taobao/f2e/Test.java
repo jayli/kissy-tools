@@ -12,6 +12,6 @@ public class Test {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(Pattern.compile("ua(?:/.*)?$").matcher("ua").matches());
+		System.out.println(Pattern.compile("(ua)(/.*)?$").matcher("ua/xx").replaceAll("$2"));
 	}
 }

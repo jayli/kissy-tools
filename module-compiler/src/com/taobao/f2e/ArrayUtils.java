@@ -9,13 +9,17 @@ public class ArrayUtils {
 	}
 
 	public static String join(String[] attr, String sep) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (String a : attr) {
 			sb.append(a);
 			sb.append(sep);
 		}
 		String re = sb.toString();
 		//remove last sep
-		return re.substring(0, re.length() - sep.length());
+		if (re.length() > 0) {
+			return re.substring(0, re.length() - sep.length());
+		} else {
+			return re;
+		}
 	}
 }
