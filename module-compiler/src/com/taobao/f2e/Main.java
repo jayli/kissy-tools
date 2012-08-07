@@ -1,11 +1,12 @@
 package com.taobao.f2e;
 
-import com.google.javascript.rhino.Node;
-import com.google.javascript.rhino.Token;
 import org.apache.commons.cli.*;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -196,7 +197,7 @@ public class Main {
 		//mark as start for cyclic detection
 		modulesVisited.add(requiredModuleName);
 
-		completeModuleName(requiredModule);
+		requiredModule.completeModuleName();
 
 		String[] requires = requiredModule.getRequires();
 
@@ -237,23 +238,6 @@ public class Main {
 		comboUrl.append(module.getName())
 				.append(minSuffix ? "-min" : "")
 				.append(".js");
-	}
-
-	/**
-	 * S.add(func); -> S.add("moduleName",func);
-	 * @param module
-	 */
-	private void completeModuleName(Module module) {
-		Node moduleNameNode = module.getModuleNameNode();
-		if (moduleNameNode.getType() != Token.STRING) {
-			moduleNameNode.addChildAfter(Node.newString(module.getName()),
-					moduleNameNode.getParent().getChildBefore(moduleNameNode));
-			module.setWithModuleName(false);
-			module.setCode(AstUtils.toSource(module.getAstRoot()));
-		} else {
-			module.setWithModuleName(true);
-			module.setCode(module.getContent());
-		}
 	}
 
 	public static void commandRunnerCLI(String[] args) throws Exception {

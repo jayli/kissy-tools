@@ -4,7 +4,6 @@ import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * KISSY Module Format.
@@ -64,7 +63,7 @@ public class Module {
 		}
 		try {
 			String content = this.getContent();
-			astRoot = AstUtils.parse(content);
+			astRoot = AstUtils.parse(content,name);
 			return astRoot;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -80,6 +79,23 @@ public class Module {
 		}
 	}
 
+	/**
+	 * S.add(func); -> S.add("moduleName",func);
+	 */
+	public void completeModuleName() {
+		Module module=this;
+		Node moduleNameNode = module.getModuleNameNode();
+		if (moduleNameNode.getType() != Token.STRING) {
+			moduleNameNode.addChildAfter(Node.newString(module.getName()),
+					moduleNameNode.getParent().getChildBefore(moduleNameNode));
+			module.setWithModuleName(false);
+			module.setCode(AstUtils.toSource(module.getAstRoot()));
+		} else {
+			module.setWithModuleName(true);
+			module.setCode(module.getContent());
+		}
+	}
+
 	public void updateCodeToFile() {
 		FileUtils.outputContent(code, fullpath, encoding);
 	}
@@ -89,34 +105,7 @@ public class Module {
 			return requires;
 		}
 		Node astRoot = this.getAstRoot();
-		ArrayList<String> re = new ArrayList<String>();
-		Node r = astRoot.getFirstChild().getFirstChild().getLastChild();
-		if (r.getType() == Token.OBJECTLIT) {
-			Node first = r.getFirstChild();
-			while (first != null) {
-				/**
-				 * KISSY.add("xx",function(){},{
-				 * 	requires:["y1","y2"]
-				 * });
-				 */
-				if (first.getString().equals("requires")) {
-					Node list = first.getFirstChild();
-					if (list.getType() == Token.ARRAYLIT) {
-						Node fl = list.getFirstChild();
-						while (fl != null) {
-							/**
-							 * depName can be relative ./ , ../
-							 */
-							re.add(ModuleUtils.getDepModuleName(name, fl.getString()));
-							fl = fl.getNext();
-						}
-					}
-					break;
-				}
-				first = first.getNext();
-			}
-		}
-		return requires = re.toArray(new String[re.size()]);
+		return requires = ModuleUtils.getRequiresFromAst(astRoot, name);
 	}
 
 	public boolean isWithModuleName() {

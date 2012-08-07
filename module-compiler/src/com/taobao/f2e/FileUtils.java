@@ -2,9 +2,13 @@ package com.taobao.f2e;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 
 public class FileUtils {
+
+	static Pattern SUFFIX_REMOVE = Pattern.compile("\\.js$", Pattern.CASE_INSENSITIVE);
+
 	public static String getFileContent(String path, String encoding) {
 		StringBuffer sb = new StringBuffer();
 		BufferedReader r = null;
@@ -15,11 +19,9 @@ public class FileUtils {
 				sb.append(line);
 				sb.append("\n");
 			}
-		}
-		catch (FileNotFoundException e) {
-			System.out.println("warning : file not found : "+path);
-		}
-		catch (Exception e) {
+		} catch (FileNotFoundException e) {
+			System.out.println("warning : file not found : " + path);
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
@@ -50,6 +52,10 @@ public class FileUtils {
 	 */
 	public static String escapePath(String path) {
 		return path.replaceAll("\\\\", "/");
+	}
+
+	public static String removeSuffix(String path) {
+		return SUFFIX_REMOVE.matcher(path).replaceAll("");
 	}
 
 	/**

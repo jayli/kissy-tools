@@ -1,3 +1,3 @@
 KISSY.add("event/ie", function() {
-}, {requires:["./base"]});
+}, {requires:["./base",'dom/ie','ua']});
 

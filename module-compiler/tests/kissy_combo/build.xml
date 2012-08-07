@@ -20,7 +20,7 @@ build example for kissy loader
     <property name="module.compiler" value="${ks.tools}\module-compiler\module-compiler.jar"/>    
 
     <!-- js 构建-->
-    <target name='jsrun' depends="combo">
+    <target name='jsrun' depends="combo,deps">
     </target>
     
     <!--js  combo 地址获取-->
@@ -66,6 +66,29 @@ build example for kissy loader
                 </java>
             </sequential>
         </ac:for>
+    </target>
+
+    <!--依赖抽取-->
+    <target name='deps'>
+                <java classname="com.taobao.f2e.ExtractDependency">
+                    <arg value="-baseUrls"/>
+                    <arg value="${assets.dir}"/>
+
+                    <arg value="-encodings"/>
+                    <arg value="${charset}"/>
+
+                    <arg value="-nameMap"/>
+                    <arg value="event(/.*)?|event,dom(/.*)?|dom"/>
+
+                    <arg value="-outputEncoding"/>
+                    <arg value="utf-8"/>
+                    <arg value="-output"/>
+                    <arg value="${assets.dir}/deps.js"/>
+                    <classpath>
+                        <pathelement path="${module.compiler}"/>
+                        <pathelement path="${java.class.path}"/>
+                    </classpath>
+                </java>
     </target>
 
     <!--项目(js,css)构建-->

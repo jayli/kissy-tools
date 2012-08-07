@@ -15,7 +15,7 @@ public class AstUtils {
 	 * @param {String} code	javascript source
 	 * @return {Node} root	node of ast corresponding to source code
 	 */
-	public static Node parse(String code) {
+	public static Node parse(String code,String name) {
 		//just want to use Compiler as one parameter for CompilerInput's getAstRoot method
 		Compiler compiler = new Compiler();
 		CompilerOptions options = new CompilerOptions();
@@ -25,7 +25,7 @@ public class AstUtils {
 		compiler.initOptions(options);
 		//get a fake file representing input source code
 		//CompilerInput need JSSourceFile as type of input for constructor
-		JSSourceFile input = JSSourceFile.fromCode("parse.js", code);
+		JSSourceFile input = JSSourceFile.fromCode(name, code);
 		CompilerInput ci = new CompilerInput(input);
 		//here we go , finally get root node of ast
 		return ci.getAstRoot(compiler);
@@ -60,13 +60,13 @@ public class AstUtils {
 		String kissy = "KISSY.add('event',function(){},{requires:['dom','event']});";
 		String seajs = "module.declare('x',['z','p'],function(){require('2');});";
 
-		Node k = parse(kissy);
+		Node k = parse(kissy,"kissy");
 
 
 		//System.out.println(k.toStringTree());
 
 
-		Node sea = parse(seajs);
+		Node sea = parse(seajs,"seajs");
 
 
 		System.out.println(sea.toStringTree());
@@ -75,10 +75,10 @@ public class AstUtils {
 //		.getFirstChild().getFirstChild().getFirstChild().getType()
 //		);
 		//get ast
-		Node n = parse(code);
+		Node n = parse(code,"test");
 
 		//add ast
-		Node n2 = parse(code2);
+		Node n2 = parse(code2,"test");
 
 		//use cloneTree to get a node with its children and children's children
 		Node newChild = n2.getFirstChild().cloneTree();

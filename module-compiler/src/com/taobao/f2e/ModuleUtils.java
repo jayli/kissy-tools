@@ -1,5 +1,10 @@
 package com.taobao.f2e;
 
+import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
+
+import java.util.ArrayList;
+
 /**
  * utils for module
  */
@@ -40,5 +45,37 @@ public class ModuleUtils {
 			depModuleName = FileUtils.normPath(relativeDepName);
 		}
 		return depModuleName;
+	}
+
+
+	public static String[] getRequiresFromAst(Node astRoot,String name) {
+		ArrayList<String> re = new ArrayList<String>();
+		Node r = astRoot.getFirstChild().getFirstChild().getLastChild();
+		if (r.getType() == Token.OBJECTLIT) {
+			Node first = r.getFirstChild();
+			while (first != null) {
+				/**
+				 * KISSY.add("xx",function(){},{
+				 * 	requires:["y1","y2"]
+				 * });
+				 */
+				if (first.getString().equals("requires")) {
+					Node list = first.getFirstChild();
+					if (list.getType() == Token.ARRAYLIT) {
+						Node fl = list.getFirstChild();
+						while (fl != null) {
+							/**
+							 * depName can be relative ./ , ../
+							 */
+							re.add(ModuleUtils.getDepModuleName(name, fl.getString()));
+							fl = fl.getNext();
+						}
+					}
+					break;
+				}
+				first = first.getNext();
+			}
+		}
+		return re.toArray(new String[re.size()]);
 	}
 }
