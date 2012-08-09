@@ -27,13 +27,6 @@ public class Packages {
 			//"d:/code/kissy_git/kissy-tools/module-compiler/test/kissy/"
 	};
 
-	/**
-	 * package cdn base urls
-	 */
-	private String[] cdnUrls = {
-			//"http://a.tbcdn.cn/s/kissy/1.2.0/"
-	};
-
 	public String[] getEncodings() {
 		return encodings;
 	}
@@ -59,22 +52,6 @@ public class Packages {
 		this.baseUrls = re.toArray(new String[re.size()]);
 	}
 
-	public String[] getCdnUrls() {
-		return cdnUrls;
-	}
-
-	public void setCdnUrls(String[] cdnUrls) {
-		ArrayList<String> re = new ArrayList<String>();
-		for (String base : cdnUrls) {
-			base = FileUtils.escapePath(base);
-			if (!base.endsWith("/")) {
-				base += "/";
-			}
-			re.add(base);
-		}
-		this.cdnUrls = re.toArray(new String[re.size()]);
-	}
-
 	public Module getModule(String moduleName) {
 
 		if (nameModuleMap.get(moduleName) != null) {
@@ -84,7 +61,6 @@ public class Packages {
 		Packages packages = this;
 		String[] baseUrls = packages.getBaseUrls();
 		String[] encodings = packages.getEncodings();
-		String[] cdnUrls = packages.getCdnUrls();
 		String path = packages.getModuleFullPath(moduleName);
 		String baseUrl = path.replaceFirst("(?i)" + moduleName + ".js$", "");
 		int index = ArrayUtils.indexOf(baseUrls, baseUrl);
@@ -96,9 +72,6 @@ public class Packages {
 		module.setEncoding(encoding);
 		module.setFullpath(path);
 		module.setPackageBase(baseUrl);
-		if (cdnUrls.length > index) {
-			module.setPackageCdnBase(cdnUrls[index]);
-		}
 		module.setName(moduleName);
 		nameModuleMap.put(moduleName, module);
 		return module;

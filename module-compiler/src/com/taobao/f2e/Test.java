@@ -1,17 +1,35 @@
 package com.taobao.f2e;
 
 
-import java.util.regex.Pattern;
-
 public class Test {
 
-	static void prepare() {
+	public static void testKISSY1_3() {
 		Main main = new Main();
-		main.setOutput("../test/kissy_combo/page/run.combo.js");
-		main.setRequires(new String[]{"page/run"});
+		main.setOutput("d:\\code\\kissy_git\\kissy-tools\\" +
+				"module-compiler\\tests\\tb_kissy_1.3\\" +
+				"build\\biz\\page\\run.combo.js");
+		main.setOutputDependency("d:\\code\\kissy_git\\kissy-tools\\" +
+				"module-compiler\\tests\\tb_kissy_1.3\\" +
+				"build\\biz\\page\\run.dep.js");
+		main.setRequire("biz/page/run");
+		main.getPackages().setBaseUrls(new String[]{"d:\\code\\kissy_git\\kissy-tools\\" +
+				"module-compiler\\tests\\tb_kissy_1.3\\src\\"});
+		main.run();
+	}
+
+	public static void testKISSY1_3_combo() {
+		ExtractDependency main = new ExtractDependency();
+		main.setOutput("d:\\code\\kissy_git\\kissy-tools\\" +
+				"module-compiler\\tests\\tb_kissy_1.3\\build-combo\\biz\\dep.js");
+		main.setFixModuleName(true);
+		main.getPackages().setBaseUrls(new String[]{
+				"d:\\code\\kissy_git\\kissy-tools\\module-compiler\\tests\\tb_kissy_1.3\\build-combo\\"
+		});
+
+		main.run();
 	}
 
 	public static void main(String[] args) {
-		System.out.println(Pattern.compile("(ua)(/.*)?$").matcher("ua/xx").replaceAll("$2"));
+		testKISSY1_3_combo();
 	}
 }

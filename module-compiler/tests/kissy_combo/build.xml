@@ -37,28 +37,24 @@ build example for kissy loader
                     build ${var.modname} in @{page}
                 </echo>
                 <java classname="com.taobao.f2e.Main">
-
-                    <arg value="-requires"/>
+                    <arg value="-require"/>
                     <!-- 入口模块 -->
                     <arg value="page/${var.modname}"/>
                     <arg value="-baseUrls"/>
                     <arg value="${assets.dir}"/>
-                    <!-- 本地路径和cdn路径的对应 -->
-                    <arg value="-cdnUrls"/>
-                    <arg value="http://a.tbcdn.cn/test/"/>
+
                     <arg value="-encodings"/>
                     <arg value="${charset}"/>
-                    <!--输出 cdn combo 形式 -->
-                    <!--<arg value="-outputCombo"/>-->
-                    <!--<arg value="1"/>-->
+
 
                     <arg value="-outputEncoding"/>
                     <arg value="utf-8"/>
                     <arg value="-output"/>
                     <arg value="${page.dir}/${var.modname}.combo.js"/>
-                    <!-- cdn combo 文件地址是否带 \-min -->  
-                    <arg value="-minSuffix"/>
-                    <arg value="1"/>                    
+
+                    <arg value="-outputDependency"/>
+                    <arg value="${page.dir}/${var.modname}.dep.js"/>
+
                     <classpath>
                         <pathelement path="${module.compiler}"/>
                         <pathelement path="${java.class.path}"/>

@@ -19,7 +19,7 @@ public class Module {
 	/**
 	 * encoding of module 's code file.
 	 */
-	private String encoding;
+	private String encoding = "utf-8";
 	/**
 	 * module package 's file path.
 	 */
@@ -63,7 +63,7 @@ public class Module {
 		}
 		try {
 			String content = this.getContent();
-			astRoot = AstUtils.parse(content,name);
+			astRoot = AstUtils.parse(content, name);
 			return astRoot;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -83,7 +83,7 @@ public class Module {
 	 * S.add(func); -> S.add("moduleName",func);
 	 */
 	public void completeModuleName() {
-		Module module=this;
+		Module module = this;
 		Node moduleNameNode = module.getModuleNameNode();
 		if (moduleNameNode.getType() != Token.STRING) {
 			moduleNameNode.addChildAfter(Node.newString(module.getName()),
