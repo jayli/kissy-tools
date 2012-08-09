@@ -7,7 +7,7 @@
 */
 
 KISSY.add("biz/x", function() {
-}, {requires:["overlay"]});
+}, {requires:["overlay", "switchable"]});
 KISSY.add("biz/y", function() {
 }, {requires:["./x"]});
 KISSY.add("biz/page/run", function() {

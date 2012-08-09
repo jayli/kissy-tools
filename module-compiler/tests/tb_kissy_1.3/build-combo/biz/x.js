@@ -1,3 +1,3 @@
 KISSY.add("biz/x", function() {
-}, {requires:["overlay"]});
+}, {requires:["overlay", "switchable"]});
 

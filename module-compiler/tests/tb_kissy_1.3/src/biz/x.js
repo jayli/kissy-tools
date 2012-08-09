@@ -1,4 +1,4 @@
 KISSY.add(function(){
 },{
-    requires:["overlay"]
+    requires:["overlay","switchable"]
 });
