@@ -1,4 +1,4 @@
-KISSY.add(function(){
-},{
-    requires:["switch","overlay"]
+KISSY.add(function () {
+}, {
+    requires: ["switch", "overlay", (window["xx"] ? "x" : "y")]
 });

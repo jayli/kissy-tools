@@ -124,9 +124,9 @@ public class Main {
 		}
 
 		if (outputDependency != null && dependencies.size() != 0) {
-			re = DEP_PREFIX + "'" + require + "': {requires: '" +
+			re = DEP_PREFIX + "'" + require + "': {requires: ['" +
 					ArrayUtils.join(dependencies.toArray(new String[dependencies.size()]), "','")
-					+ "'}" + DEP_SUFFIX;
+					+ "']}" + DEP_SUFFIX;
 			FileUtils.outputContent(re, outputDependency, outputEncoding);
 			System.out.println("success generated: " + outputDependency);
 		}
