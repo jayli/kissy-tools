@@ -269,15 +269,15 @@ public class ExtractDependency {
         for (String name : keys) {
             ArrayList<String> requires = dependencyCode.get(name);
             if (requires.size() > 0) {
-                String allRs="";
-                for(String r:requires){
-                    if(!r.startsWith("#")){
-                        allRs+=",'"+r+"'";
-                    }else{
-                        allRs+=","+r.substring(1);
+                String allRs = "";
+                for (String r : requires) {
+                    if (!r.startsWith("#")) {
+                        allRs += ",'" + r + "'";
+                    } else {
+                        allRs += "," + r.substring(1);
                     }
                 }
-                codes.add("'" + name + "': {requires: ["+allRs.substring(1)+"]}");
+                codes.add("'" + name + "': {requires: [" + allRs.substring(1) + "]}");
             }
         }
         return codes;
