@@ -1,9 +1,9 @@
 {
 "--output":"d:/code/kissy_git/kissy/docs",
 "--title":"KISSY v1.3rc Documentation",
-"--external":"window,HTMLDocument,HTMLElement,DocumentFragment",
+"--external":"window,HTMLDocument,HTMLElement,DocumentFragment,XMLHttpRequest",
 "--":[
-        //"d:/code/kissy_git/kissy/src/ajax/src",
+        "d:/code/kissy_git/kissy/src/ajax/src",
     	//"d:/code/kissy_git/kissy/src/separator/src",
     	//"d:/code/kissy_git/kissy/src/toolbar/src",
     	//"d:/code/kissy_git/kissy/src/stylesheet/src",
