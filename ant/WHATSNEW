@@ -1,3 +1,205 @@
+Changes from Ant 1.8.3 TO Ant 1.8.4
+===================================
+
+Fixed bugs:
+-----------
+
+ * Ported libbzip2's fallback sort algorithm to CBZip2OutputStream to
+   speed up compression in certain edge cases.  Merge from Commons
+   Compress.
+
+Changes from Ant 1.8.2 TO Ant 1.8.3
+===================================
+
+Changes that could break older environments:
+-------------------------------------------
+
+ * The Enumeration returned by AntClassLoader#getResources used to
+   return null in nextElement after hasNextElement would return false.
+   It has been changed to throw a NoSuchElementException instead so
+   that it now adheres to the contract of java.util.Enumeration.
+   Bugzilla Report 51579.
+
+Fixed bugs:
+-----------
+
+ * Removed buggy duplicate JAR list in RPM mode.
+   Bugzilla Report 52556.
+
+ * Launcher fixed to pass the right class loader parent.
+   Bugzilla Report 48633.
+
+ * <junitreport> mishandled ${line.separator}.
+   Bugzilla Report 51049.
+
+ * <junitreport> did not work in embedded environments on JDK 7.
+   Nor did <xslt> when using Xalan redirects.
+   Bugzilla Report 51668, 52382.
+
+ * Encoding of unicode escape sequences by the property file task
+   Bugzilla Report 50515.
+
+ * The code that implicitly sets the -source switch if only -target
+   has been specified in <javac> was broken for Java 5 and 6.
+   Bugzilla Report 50578.
+
+ * MailLogger ignore the Maillogger.starttls.enable property.
+   Bugzilla Report 50668.
+
+ * Delete task example does not work
+   Bugzilla Report 50816.
+
+ * <splash>'s proxy handling has been delegated to <setproxy>
+   internally so the two tasks are consistent.  <splash>'s way of not
+   setting a proxy caused problems with other Java libraries.
+   Bugzilla Report 50888.
+
+ * Include task breaks dependencies or extension-points for multiple
+   files.
+   Bugzilla Report 50866.
+
+ * Read on System.in hangs for forked java task.
+   Bugzilla Report 50960.
+
+ * FileResource specified using basedir/name attributes was non-functional.
+
+ * Resource collection implementation of mapped PropertySet returned
+   unusable resources.
+
+ * The hasmethod condition failed with a NullPointerException when
+   ignoresystemclasses is true and Ant tried to load a "restricted
+   class" - i.e. a class that the Java VM will only accept when loaded
+   via the bootclassloader (a java.* class).
+   It will now fail with a more useful error message.
+   Bugzilla Report 51035.
+
+ * Exec task may mix the stderr and stdout output while logging it
+   Bugzilla Report 50507.
+
+ * Missing space between "finished" and timestamp in task/target 
+   finish message from ProfileLogger.
+   Bugzilla Report 51109.
+
+ * Redirecting the output of a java, exec or apply task could print in the
+   error output stream some "Pipe broken" errors.
+   Bugzilla Report 48789.
+
+ * ZipFile failed to clean up some resources which could lead to
+   OutOfMemoryException while unzipping large archives.
+   A similar problem in ZipArchiveOutputStream has been fixed as well.
+   Bugzilla Report 42696.
+
+ * quiet attribute added to the copy and move tasks, to be used together
+   with failonerror=false, so warnings won't get logged 
+   Bugzilla Report 48789.
+
+ * System.in was closed and not readable anymore by the DefaultInputHandler 
+   when Ant is used via its Java API.
+   Bugzilla Report 51161
+
+ * <sync> only supported a single non-fileset resource collection even
+   though the manual said it could be multiple.
+
+ * <sync> didn't work properly when working on resource collections.
+   Bugzilla Report 51462.
+
+ * <augment> cause a NullPointerException if it was used in a target
+   that was invoked by multiple targets from the command line.
+   Bugzilla Report 50894.
+
+ * The ZipFile class could read past the start of the file if the
+   given file is not a ZIP archive and it is smaller than the size of
+   a ZIP "end of central directory record".
+
+ * <javac> would create the empty package-info.class file in the wrong
+   directory if no destdir was specified.  Note it may still pick the
+   wrong directory if you specify more than one source directory but
+   no destDir.  It is highly recommended that you always explicitly
+   specify the destDir attribute.
+   Bugzilla Report 51947.
+
+ * packagemapper now honors the handleDirSep attribute.
+   Bugzilla Report 51086.
+
+ * the attributes of macrodef tasks had their values run through
+   property expansion twice. Still true by default, but can be disabled.
+   Bugzilla Report 42046.
+
+ * jvc doesn't like it if source file names in argument files are
+   quoted.
+   Bugzilla Report 31667.
+
+ * ZipFile didn't work properly for archives using unicode extra
+   fields rather than UTF-8 filenames and the EFS-Flag.
+
+ * Access to DirectoryScanner's default excludes wasn't synchronized.
+   Bugzilla Report 52188.
+
+ * When a Project instance was created by a custom tasks its
+   createTask method didn't work.
+   Bugzilla Report 50788.
+
+Other changes:
+--------------
+
+ * -f/-file/-buildfile accepts a directory containing build.xml.
+
+ * The <javacc>, <jjtree> and <jjdoc> now support a new maxmemory
+   attribute.
+   Bugzilla Report 50513.
+
+ * the documented inputstring attribute of sshexec has been
+   implemented and the actually existing attribute inputproperty
+   documented.
+   Bugzilla Report 50576.
+
+ * The concat task now permits the name of its exposed resource
+   by means of its 'resourcename' attribute.
+
+ * The expandproperties filter now accepts a nested propertyset
+   which, if specified, provides the properties for expansion.
+   Bugzilla Report 51044.
+
+ * <junit filtertrace="true"/> will no longer filter out the very
+   first line of the stacktrace containing the original exception
+   message even if it matches one of the filter expressions.
+
+ * Upgraded to Apache AntUnit 1.2
+
+ * Provide read access to Mkdir.dir.  Bugzilla Report 51684.
+
+ * <delete> and <move> have a new attribute performGCOnFailedDelete
+   that may - when set to true - help resolve some problems with
+   deleting empty directories on NFS shares.
+   Bugzilla Report 45786.
+
+ * <loadfile> and <loadresource> used to log at level INFO to signal a
+   property hasn't been set when the resource was empty even if the
+   quiet attribute was set to true.  They will now use VERBOSE
+   instead.
+   Bugzilla Report 52107.
+
+ * <javac> has a new attribute createMissingPackageInfoClass that can
+   be set to false to prevent Ant from creating empty dummy classes
+   used for up-to-date-ness checks.
+   Bugzilla Report 52096.
+
+ * URLResources#isExists has become less noisy.
+   Bugzilla Report 51829.
+
+ * The <retry> task has a new optional attribute retryDelay that can
+   be used to make the task sleep between retry attempts.
+   Bugzilla Report 52076.
+
+ * <signjar> has new attributes that control the signature and digest
+   algorithms.
+   Bugzilla Report 52344.
+
+ * Initial support for Java 8.
+
+ * <sshexec> can optionally create a pseudo terminal (like ssh -t)
+   Bugzilla Report 52554.
+
 Changes from Ant 1.8.1 TO Ant 1.8.2
 ===================================
 
@@ -32,7 +234,7 @@ Changes that could break older environments:
  * The list elements returned by ProjectHelper#getExtensionStack are
    now String arrays of length 3 rather than 2 in order to support the
    onMissingExtensionPoint attribute.
-   Bugzilla Report 49473.   
+   Bugzilla Report 49473.
 
  * When using <property file="..." prefix="..."/> properties defined
    inside the same file will only get used in expansions if the ${}
@@ -70,7 +272,7 @@ Fixed bugs:
    For large files this is not feasible. 
    We now explicitly request to copy at most 16 MiB per request.
    Bugzilla Report 49326.
-   
+
  * DemuxInputStream.read() should return unsigned values
    Bugzilla Report 49279.
 
@@ -228,7 +430,7 @@ Other changes:
    defined or silently work as plain targets if it hasn't.  This is
    useful for targets that get included/imported in different
    scenarios where a given extension-point may or may not exist.
-   Bugzilla Report 49473.   
+   Bugzilla Report 49473.
 
  * Ant now logs a warning message if it fails to change the file
    modification time in for example when using <touch> or preserving
@@ -300,8 +502,8 @@ Changes that could break older environments:
 
  * Ant no longer ships with Apache Xerces-J or the XML APIs but relies
    on the Java runtime to provide a parser and matching API versions.
-   
- * The stylebook ant task and the ant-stylebook.jar are removed.  
+
+ * The stylebook ant task and the ant-stylebook.jar are removed.
 
 Fixed bugs:
 -----------
@@ -323,38 +525,38 @@ Fixed bugs:
 
  * VectorSet#remove(Object) would fail if the size of the vector
    equaled its capacity.
-   
+
  * Regression : ant -diagnostics was returning with exit code 1
    Bugzilla Report 48782
-   
+
  * Fix for exec task sometimes inserts extraneous newlines
    Bugzilla Report 48746
-   
+
  * SymlinkTest#testSymbolicLinkUtilsMethods failing on MacOS
    Bugzilla Report 48785.
 
  * If <concat>'s first resourcecollection child is a <resources>,
    any subsequently added child resourcecollection joins the first.
-   Bugzilla Report 48816.        
-   
+   Bugzilla Report 48816.
+
  * <get> with an invalid URL could trigger an NPE in some JVMs.
    Bugzilla Report 48833
-   
+
  * Broken Pipe issue under Ubuntu Linux
    Bugzilla Report 48789
-   
+
  * Properties wrongly read from file or not update during read
-   Bugzilla Report 48768       
+   Bugzilla Report 48768
 
  * AntClassLoader in Ant 1.8.0 has been considerably slower than in
    1.7.1
    Bugzilla Report 48853
-   
+
  * ANT_CMD_LINE_ARGS are rippling through lower level Ant usage 
    Bugzilla Report 48876
-   
+
  * email : IO error sending mail with plain mimetype
-   Bugzilla Report 48932    
+   Bugzilla Report 48932
 
  * the complete-ant-cmd.pl script failed to create a proper cache of
    target if "ant -p" failed.
@@ -398,7 +600,7 @@ Other changes:
 
  * The <zip> family of tasks has been sped up for bigger archives.
    Bugzilla Report 48755.
-   
+
  * Add removeKeepExtension option to NetRexxC task.
    Bugzilla Report 48788.
 
@@ -413,11 +615,11 @@ Other changes:
    of Object args as strings; previously only API-level usage of the
    equals condition allowed Object args, but Ant 1.8.x+ property
    evaluation may yield values of any type.
-   
+
  * BuildFileTest.assertPropertyUnset() fails with a slightly more 
    meaningful error message
    Bugzilla Report 48834
-   
+
  * <junit> will now throw an exception if a test name is empty.  This
    used to manifest itself in unrelated errors like
    Bugzilla Report 43586.
@@ -465,9 +667,9 @@ Fixed bugs:
    the jarjar links task and protentially other third-party subclasses
    as well.
    Bugzilla Report 48541.
-   
+
  * <scp> task didn't report build file location when a remote operation failed
-   Bugzilla Report 48578.  
+   Bugzilla Report 48578.
 
  * <propertyfile> would add the same comment and a date line each time
    it updated an existing property file.
@@ -533,7 +735,7 @@ Changes that could break older environments:
    The TempFile task still does not create the file by default, can be
    instructed to do so however using a new parameter.
    Bugzilla Report 33969.
-  
+
  * A lock in Project ensured that a BuildListener's messageLogged
    method was only ever executed by a single thread at a time, while
    all other methods could be invoked by multiple threads
@@ -702,10 +904,10 @@ Fixed bugs:
 
  * <symlink> task couldn't overwrite files that were in the way of the symlink.
    Bugzilla Report 43426.
-   
+
  * <symlink> task failonerror="false" does not stop build from failing
    when 'ln' command returns non-zero.
-   Bugzilla Report 43624  
+   Bugzilla Report 43624
 
  * <touch> task couldn't differentiate between "no resources
    specified" and "no resources matched."
@@ -718,7 +920,7 @@ Fixed bugs:
  * <globmapper> had an indexoutofbounds when the prefix and postfix
    overlapped.
    Bugzilla Report 44731.
-   
+
  * <typedef> and <taskdef> failed to accept file names with #
    characters in them.
    Bugzilla Report 45190
@@ -771,7 +973,7 @@ Fixed bugs:
  * <filterset> sometimes incorrectly flagged infinite recursions of
    filter tokens
    Bugzilla Report 44226.
-   
+
  * failures were treated as errors in forked JUnit tests when JUnit 4
    was used.
    Bugzilla Report 43892.
@@ -1033,15 +1235,15 @@ Other changes:
    to provide filenames, rather than require that all resources
    are instances or subclasses of FileResource.
    Bugzilla Report 43348
-   
+
  * There is now a URLProvider interface for resources that act as a
    source of URLs. This should be used by tasks that require resources
    to provide URLs, rather than require that all resources are
    instances or subclasses of URLResource.
-   
+
  * Fixcrlf now gives better error messages on bad directory attributes.
    Bugzilla Report 43936
-   
+
  * a new property ant.project.default-target holds the value of the
    current <project>'s default attribute.
 
@@ -1450,7 +1652,7 @@ Other changes:
  * It is now possible to suppress the "FAILED" lines sent to Ant's
    logging system via <junit>'s new logFailedTests attribute.
    Bugzilla Report 35073.
-   
+
  * <propertyfile> now can delete entries.
 
  * The <resources> resource collection can now optionally cache its
@@ -1498,7 +1700,7 @@ Other changes:
    be loaded from the specified classpath rather than the system
    classloader.
    Bugzilla Report 41369.
-   
+
  * <property location="from" basedir="to" relative="true"/> can now
    calculate relative paths.
 
@@ -1513,7 +1715,7 @@ Other changes:
  * <import> can now import non-File resources if they provide an URL
    - as the <url> and <javaresource> resources do.
    Bugzilla Report 29251
-   
+
  * <import> can now import multiple resources specified as resource
    collections.
    Bugzilla Report 22269.
@@ -1592,7 +1794,7 @@ Fixed bugs:
 
 * SPI support in jar was broken.
   Bugzilla report 41201.
-  
+
 * jsch-0.1.30 causes SCP task to hang
   Bugzilla report 41090.
 
@@ -1652,7 +1854,7 @@ Fixed bugs:
   Bugzilla 42946
 
 * <junit> supports collecting and rerunning failed test cases
-  (textXXX methods). Bugzilla 42984.  
+  (textXXX methods). Bugzilla 42984.
 
 * War task failed with "No WEB-INF/web.xml file was added" when called
   a second time. Bugzilla 43121.
@@ -1733,7 +1935,7 @@ Other changes:
   <comment> nested element as nested text instead of using the 'value'
   attribute.
 
-* A new logger, BigProjectLogger, lists the project name with every target   
+* A new logger, BigProjectLogger, lists the project name with every target
 
 * Default text added to macrodef. Bugzilla report 42301.
 
