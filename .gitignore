@@ -11,3 +11,4 @@
 Thumb.db
 module-compiler/out/
 module-compiler/build/
+jsduck/*.exe
