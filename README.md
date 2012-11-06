@@ -9,7 +9,7 @@
  - YUI Compressor:  KISSY 采用的 CSS 压缩工具
  - Ant: 自动配置、打包工具
  - [kissy-pie](https://github.com/maxbbn/front-build):  前端自动化工具集
- - [KISSY Module Compiler](http://docs.kissyui.com/docs/html/tools/module-compiler/index.html): 模块依赖打包工具
+ - [KISSY Module Compiler](http://docs.kissyui.com/docs/html/tutorials/tools/module-compiler/index.html): 模块依赖打包工具
 
 
 ## 其它工具
