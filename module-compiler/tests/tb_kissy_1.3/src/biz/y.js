@@ -1,4 +1,3 @@
-KISSY.add(function(){
-},{
-    requires:["./x"]
-});
+KISSY.add("biz/y", function() {
+}, {requires:["./x"]});
+

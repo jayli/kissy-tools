@@ -1,5 +1,3 @@
-KISSY.add(function () {
+KISSY.add("overlay", function() {
+}, {requires:["dom", "event", "component"]});
 
-}, {
-    requires: ['dom', 'event', 'component']
-});

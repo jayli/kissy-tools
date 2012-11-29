@@ -26,10 +26,6 @@ public class Module {
      */
     private String packageBase;
     /**
-     * module package 's cdn path.
-     */
-    private String packageCdnBase;
-    /**
      * module name.
      */
     private String name;
@@ -58,6 +54,10 @@ public class Module {
         return new File(fullpath).exists();
     }
 
+    public void setAstRoot(Node root) {
+        this.astRoot = root;
+    }
+
     public Node getAstRoot() {
         if (astRoot != null) {
             return astRoot;
@@ -70,6 +70,10 @@ public class Module {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getContent() {
@@ -91,6 +95,7 @@ public class Module {
                     moduleNameNode.getParent().getChildBefore(moduleNameNode));
             module.setWithModuleName(false);
             module.setCode(AstUtils.toSource(module.getAstRoot()));
+            FileUtils.outputContent(code, fullpath, encoding);
         } else {
             module.setWithModuleName(true);
             module.setCode(module.getContent());
@@ -140,28 +145,12 @@ public class Module {
         this.fullpath = fullpath;
     }
 
-    public String getEncoding() {
-        return encoding;
-    }
-
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
-    public String getPackageBase() {
-        return packageBase;
-    }
-
     public void setPackageBase(String packageBase) {
         this.packageBase = packageBase;
-    }
-
-    public String getPackageCdnBase() {
-        return packageCdnBase;
-    }
-
-    public void setPackageCdnBase(String packageCdnBase) {
-        this.packageCdnBase = packageCdnBase;
     }
 
     public String getName() {
@@ -172,10 +161,71 @@ public class Module {
         this.name = name;
     }
 
-    public Node getModuleNameNode() {
+    private Node getModuleNameNode() {
         astRoot = this.getAstRoot();
         Node getProp = astRoot.getFirstChild().getFirstChild().getFirstChild();
         //add method's first parameter is not string，add module name automatically
         return getProp.getNext();
+    }
+
+    public String getModuleNameFromNode() {
+        Node moduleNameNode = this.getModuleNameNode();
+        if (moduleNameNode != null && moduleNameNode.getType() == Token.STRING) {
+            return moduleNameNode.getString();
+        }
+        return null;
+    }
+
+    public boolean isValidFormat() {
+        Node t, root = this.getAstRoot();
+        if (root == null) {
+            return false;
+        } else if (root.getType() != Token.SCRIPT) {
+            return false;
+        }
+        t = root.getFirstChild();
+        if (t == null) {
+            return false;
+        } else if (t.getType() != Token.EXPR_RESULT) {
+            return false;
+        }
+        t = t.getFirstChild();
+        if (t == null) {
+            return false;
+        } else if (t.getType() != Token.CALL) {
+            return false;
+        }
+        t = t.getFirstChild();
+        if (t == null) {
+            return false;
+        } else if (t.getType() != Token.GETPROP) {
+            return false;
+        }
+
+        // t.getNext(); => module name . str,type==STRING
+
+        t = t.getFirstChild();
+
+        if (t == null) {
+            return false;
+        } else if (t.getType() != Token.NAME) {
+            return false;
+        } else if (!t.getString().equals("KISSY")) {
+            return false;
+        }
+
+
+        t = t.getNext();
+
+        if (t == null) {
+            return false;
+        } else if (t.getType() != Token.STRING) {
+            return false;
+        } else if (!t.getString().equals("add")) {
+            return false;
+        }
+
+        return true;
+
     }
 }

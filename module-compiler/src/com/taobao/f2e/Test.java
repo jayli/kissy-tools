@@ -1,46 +1,62 @@
 package com.taobao.f2e;
 
 
+import java.io.File;
+
 public class Test {
 
-    public static void testKISSY1_3() {
+    public static void testKISSY1_3_Main() {
         Main main = new Main();
-        main.setOutput("d:\\code\\kissy_git\\kissy-tools\\" +
-                "module-compiler\\tests\\tb_kissy_1.3\\" +
-                "build\\biz\\page\\run.combo.js");
-        main.setOutputDependency("d:\\code\\kissy_git\\kissy-tools\\" +
-                "module-compiler\\tests\\tb_kissy_1.3\\" +
-                "build\\biz\\page\\run.dep.js");
+        String path;
+        path = ExtractDependency.class.getResource("/").getFile() + "../../../tests/tb_kissy_1.3/src/";
+        String output = path + "../build/page/";
+
+        new File(output).mkdirs();
+
+        main.setOutput(output + "run.js");
+        main.setOutputDependency(output + "run.dep.js");
         main.setRequire("biz/page/run");
-        main.getPackages().setBaseUrls(new String[]{"d:\\code\\kissy_git\\kissy-tools\\" +
-                "module-compiler\\tests\\tb_kissy_1.3\\src\\"});
-        main.run();
-    }
-
-
-    public static void testCombo() {
-        ExtractDependency main = new ExtractDependency();
-        main.setOutput("d:\\code\\kissy_git\\kissy-tools\\" +
-                "module-compiler\\tests\\kissy_combo\\dep.js");
-        main.getPackages().setBaseUrls(new String[]{
-                "d:\\code\\kissy_git\\kissy-tools\\module-compiler\\tests\\kissy_combo\\"
+        main.getPackages().setBaseUrls(new String[]{path});
+        main.getPackages().setEncodings(new String[]{
+                "gbk"
         });
         main.run();
     }
 
-    public static void testKISSY1_3_combo() {
-        ExtractDependency main = new ExtractDependency();
-        main.setOutput("d:\\code\\kissy_git\\kissy-tools\\" +
-                "module-compiler\\tests\\tb_kissy_1.3\\build-combo\\biz\\dep.js");
-        main.setFixModuleName(true);
-        main.getPackages().setBaseUrls(new String[]{
-                "d:\\code\\kissy_git\\kissy-tools\\module-compiler\\tests\\tb_kissy_1.3\\build-combo\\"
+    public static void testKISSY_src_build() throws Exception {
+        ExtractDependency m = new ExtractDependency();
+        String path;
+        path = ExtractDependency.class.getResource("/").getFile() +
+                "../../../tests/kissy_combo/";
+        System.out.println(new File(path).getCanonicalPath());
+        m.getPackages().setBaseUrls(new String[]{
+                FileUtils.escapePath(new File(path).getCanonicalPath())
         });
-
-        main.run();
+        m.setOutput(path + "dep.js");
+        m.constructNameMapFromString("(event|dom/ie)(?:/.*)?||$1");
+        m.setOutputEncoding("utf-8");
+        m.run();
     }
 
-    public static void main(String[] args) {
-        testCombo();
+    public static void testKISSY1_3_ExtractDependency() throws Exception {
+        ExtractDependency m = new ExtractDependency();
+        String path;
+        path = ExtractDependency.class.getResource("/").getFile() +
+                "../../../tests/tb_kissy_1.3/src/";
+        System.out.println(new File(path).getCanonicalPath());
+        m.getPackages().setBaseUrls(new String[]{
+                FileUtils.escapePath(new File(path).getCanonicalPath())
+        });
+        m.getPackages().setEncodings(new String[]{
+                "gbk"
+        });
+        m.setOutput(path + "../build-combo/deps.js");
+        m.setOutputEncoding("utf-8");
+
+        m.run();
+    }
+
+    public static void main(String[] args) throws Exception {
+        testKISSY1_3_ExtractDependency();
     }
 }

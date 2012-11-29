@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class Packages {
 
     //map about module name and its des ,for cache
-    private static HashMap<String, Module> nameModuleMap = new HashMap<String, Module>();
+    private static HashMap<String, Module> moduleCache = new HashMap<String, Module>();
 
     /**
      * package encoding
@@ -53,11 +53,10 @@ public class Packages {
     }
 
     public Module getModule(String moduleName) {
-
-        if (nameModuleMap.get(moduleName) != null) {
-            return nameModuleMap.get(moduleName);
+        Module m = this.getModuleFromCache(moduleName);
+        if (m != null) {
+            return m;
         }
-
         Packages packages = this;
         String[] baseUrls = packages.getBaseUrls();
         String[] encodings = packages.getEncodings();
@@ -68,15 +67,28 @@ public class Packages {
             index = 0;
         }
         String encoding = encodings[index];
+        m = constructModule(encoding, path, baseUrl, moduleName);
+        this.setModuleToCache(moduleName, m);
+        return m;
+    }
+
+    private Module getModuleFromCache(String moduleName) {
+        return moduleCache.get(moduleName);
+    }
+
+    private void setModuleToCache(String moduleName, Module module) {
+        moduleCache.put(moduleName, module);
+    }
+
+    private Module constructModule(String encoding, String path,
+                                   String packageBase, String moduleName) {
         Module module = new Module();
         module.setEncoding(encoding);
         module.setFullpath(path);
-        module.setPackageBase(baseUrl);
+        module.setPackageBase(packageBase);
         module.setName(moduleName);
-        nameModuleMap.put(moduleName, module);
         return module;
     }
-
 
     private String getModuleFullPath(String moduleName) {
         Packages packages = this;
@@ -96,5 +108,41 @@ public class Packages {
             }
         }
         return path;
+    }
+
+
+    public Module getModuleFromPath(String path) {
+        String name;
+        String[] encodings = this.getEncodings();
+        String encoding = encodings[0];
+        path = FileUtils.escapePath(path);
+        String[] baseUrls = this.getBaseUrls();
+        int finalIndex = -1, curIndex = -1;
+        String finalBase = "";
+        int packageIndex = -1;
+        int finalPackageIndex = -1;
+        Module m = null;
+        for (String baseUrl : baseUrls) {
+            packageIndex++;
+            curIndex = path.indexOf(baseUrl, 0);
+            if (curIndex > finalIndex) {
+                finalIndex = curIndex;
+                finalPackageIndex = packageIndex;
+                finalBase = baseUrl;
+            }
+        }
+        if (curIndex != -1) {
+            if (finalPackageIndex < encodings.length) {
+                encoding = encodings[finalPackageIndex];
+            }
+            name = FileUtils.removeSuffix(path.substring(finalBase.length()));
+            m = constructModule(encoding, path, finalBase, name);
+            String moduleNodeName = m.getModuleNameFromNode();
+            if (moduleNodeName != null) {
+                name = moduleNodeName;
+                m.setName(name);
+            }
+        }
+        return m;
     }
 }

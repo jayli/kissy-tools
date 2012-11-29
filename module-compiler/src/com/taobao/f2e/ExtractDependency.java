@@ -1,7 +1,5 @@
 package com.taobao.f2e;
 
-import com.google.javascript.rhino.Node;
-import com.google.javascript.rhino.Token;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -15,6 +13,11 @@ import java.util.regex.Pattern;
  * @since 2012-08-07
  */
 public class ExtractDependency {
+
+    /**
+     * whether overwrite module's file with module name added.
+     */
+    private boolean fixModuleName = false;
 
     /**
      * packages.
@@ -42,11 +45,6 @@ public class ExtractDependency {
     private String outputEncoding = "utf-8";
 
     /**
-     * whether overwrite module's file with module name added.
-     */
-    private boolean fixModuleName = false;
-
-    /**
      * whether output compact module desc
      */
     private boolean compact = false;
@@ -65,7 +63,16 @@ public class ExtractDependency {
      * dom/src -> dom
      * event/src -> event
      */
-    private HashMap<String, Pattern> nameMap = new HashMap<String, Pattern>();
+    private ArrayList<RegReplace> nameMap = new ArrayList<RegReplace>();
+
+    private static class RegReplace {
+        Pattern reg;
+        String replace;
+    }
+
+    public void setFixModuleName(boolean fixModuleName) {
+        this.fixModuleName = fixModuleName;
+    }
 
     public Packages getPackages() {
         return packages;
@@ -87,169 +94,23 @@ public class ExtractDependency {
         this.outputEncoding = outputEncoding;
     }
 
-    public void setFixModuleName(boolean fixModuleName) {
-        this.fixModuleName = fixModuleName;
-    }
+    private void processSingle(String path) {
 
-    private boolean isModuleTobeProcessed(Node root) {
-        Node t;
-        if (root == null) {
-            return false;
-        }
-        if (root.getType() != Token.SCRIPT) {
-            return false;
-        }
-        t = root.getFirstChild();
-        if (t == null) {
-            return false;
-        }
-        if (t.getType() != Token.EXPR_RESULT) {
-            return false;
-        }
-        t = t.getFirstChild();
-        if (t == null) {
-            return false;
-        }
-        if (t.getType() != Token.CALL) {
-            return false;
-        }
-        t = t.getFirstChild();
-        if (t == null) {
-            return false;
-        }
-        if (t.getType() != Token.GETPROP) {
-            return false;
-        }
+        // 没必要缓存，每次都构建
+        Module m = this.getPackages().getModuleFromPath(path);
 
-        // t.getNext(); => module name . str,type==STRING
-
-        t = t.getFirstChild();
-
-        if (t == null) {
-            return false;
-        }
-        if (t.getType() != Token.NAME) {
-            return false;
-        }
-        if (!t.getString().equals("KISSY")) {
-            return false;
-        }
-
-
-        t = t.getNext();
-
-        if (t == null) {
-            return false;
-        }
-        if (t.getType() != Token.STRING) {
-            return false;
-        }
-
-        if (!t.getString().equals("add")) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private String getModuleNameFromAst(Node root) {
-        Node t;
-        if (root == null) {
-            return null;
-        }
-        if (root.getType() != Token.SCRIPT) {
-            return null;
-        }
-        t = root.getFirstChild();
-        if (t == null) {
-            return null;
-        }
-        if (t.getType() != Token.EXPR_RESULT) {
-            return null;
-        }
-        t = t.getFirstChild();
-        if (t == null) {
-            return null;
-        }
-        if (t.getType() != Token.CALL) {
-            return null;
-        }
-        t = t.getFirstChild();
-        if (t == null) {
-            return null;
-        }
-        if (t.getType() != Token.GETPROP) {
-            return null;
-        }
-
-        t = t.getNext();
-
-        if (t == null) {
-            return null;
-        }
-        if (t.getType() != Token.STRING) {
-            return null;
-        }
-
-        return t.getString();
-    }
-
-
-    private String getModuleNameFromPath(String path) {
-        path = FileUtils.escapePath(path);
-        String[] baseUrls = packages.getBaseUrls();
-        int finalIndex = -1, curIndex = -1;
-        String finalBase = "";
-        for (String baseUrl : baseUrls) {
-            curIndex = path.indexOf(baseUrl, 0);
-            if (curIndex > finalIndex) {
-                finalIndex = curIndex;
-                finalBase = baseUrl;
-            }
-        }
-        if (curIndex != -1) {
-            return FileUtils.removeSuffix(path.substring(finalBase.length()));
-        }
-
-        return null;
-
-    }
-
-    private void processSingle(String path, String encoding) {
-        String content = FileUtils.getFileContent(path, encoding);
-        Node root = null;
-        try {
-            root = AstUtils.parse(content, path);
-        } catch (Exception e) {
-            System.out.println("invalid js file: " + path);
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        if (!isModuleTobeProcessed(root)) {
+        if (!m.isValidFormat()) {
+            System.out.println("invalid module: " + path);
             return;
         }
 
-        String name;
+        m.completeModuleName();
 
-        name = getModuleNameFromAst(root);
-
-        if (name == null) {
-            name = getModuleNameFromPath(path);
-            if (fixModuleName && name != null) {
-                Module m = new Module();
-                m.setFullpath(path);
-                m.setName(name);
-                m.completeModuleName();
-                m.updateCodeToFile();
-            }
+        if (!m.isWithModuleName() && this.fixModuleName) {
+            m.updateCodeToFile();
         }
 
-        if (name == null) {
-            System.out.println("can not get " +
-                    "module name from js file: " + path);
-            return;
-        }
+        String name = m.getName();
 
         if (excludePattern != null &&
                 excludePattern.matcher(name).matches()) {
@@ -261,11 +122,9 @@ public class ExtractDependency {
             return;
         }
 
-        String[] requires = ModuleUtils.getRequiresFromAst(root, name);
+        String[] requires = m.getRequires();
         if (requires.length > 0) {
-
             dependencyCode.put(name, new ArrayList<String>(Arrays.asList(requires)));
-
         }
     }
 
@@ -280,11 +139,7 @@ public class ExtractDependency {
             if (requires.size() > 0) {
                 String allRs = "";
                 for (String r : requires) {
-                    if (!r.startsWith("#")) {
-                        allRs += ",'" + r + "'";
-                    } else {
-                        allRs += "," + r.substring(1);
-                    }
+                    allRs += ",'" + r + "'";
                 }
                 codes.add("'" + name + "': {requires: [" + allRs.substring(1) + "]}");
             }
@@ -294,24 +149,24 @@ public class ExtractDependency {
 
     private void putToDependency(HashMap<String, ArrayList<String>> dependencyCode2,
                                  String name, ArrayList<String> requires) {
-        if (requires.contains(name)) {
-            requires.remove(name);
-        }
 
         ArrayList<String> old = dependencyCode2.get(name);
 
         if (old == null) {
             old = new ArrayList<String>();
-        }
-
-        for (String require : old) {
-            if (require.equals(name)) {
-                old.remove(require);
-            }
+        } else {
+            // 防止循环引用
+//            for (String require : old) {
+//                if (require.equals(name)) {
+//                    old.remove(require);
+//                }
+//            }
         }
 
         for (String require : requires) {
-            if (!old.contains(require) && !require.equals(name)) {
+            if (!old.contains(require) &&
+                    // 防止循环引用
+                    !require.equals(name)) {
                 old.add(require);
             }
         }
@@ -320,12 +175,10 @@ public class ExtractDependency {
     }
 
     private String transformByNameMap(String name) {
-        Set<String> mapKeys = nameMap.keySet();
-        for (String mapKey : mapKeys) {
-            Pattern mapReg = nameMap.get(mapKey);
-            if (mapReg.matcher(name).matches()) {
-                mapKey = mapReg.matcher(name).replaceAll(mapKey);
-                return mapKey;
+        for (RegReplace rr : nameMap) {
+            Pattern matchReg = rr.reg;
+            if (matchReg.matcher(name).matches()) {
+                return matchReg.matcher(name).replaceAll(rr.replace);
             }
         }
         return name;
@@ -339,7 +192,7 @@ public class ExtractDependency {
     }
 
     /**
-     * merge dependency with in nameMap
+     * merge dependency within nameMap
      */
     private void mergeNameMap() {
         if (nameMap != null) {
@@ -365,8 +218,9 @@ public class ExtractDependency {
         options.addOption("output", true, "output");
         options.addOption("v", "version", false, "version");
         options.addOption("outputEncoding", true, "outputEncoding");
-        options.addOption("fixModuleName", true, "fixModuleName");
         options.addOption("compact", true, "compact mode");
+        options.addOption("fixModuleName", true, "fixModuleName");
+
         // create the command line parser
         CommandLineParser parser = new GnuParser();
         CommandLine line;
@@ -380,7 +234,7 @@ public class ExtractDependency {
         }
 
         if (line.hasOption("v")) {
-            System.out.println("KISSY Dependency Extractor 2.0");
+            System.out.println("KISSY Dependency Extractor 1.3.1");
             return;
         }
 
@@ -398,14 +252,14 @@ public class ExtractDependency {
             packages.setBaseUrls(baseUrlStr.split(","));
         }
 
-        String fixModuleName = line.getOptionValue("fixModuleName");
-        if (fixModuleName != null) {
-            m.setFixModuleName(true);
-        }
-
         String compact = line.getOptionValue("compact");
         if (compact != null) {
             m.compact = true;
+        }
+
+        String fixModuleName = line.getOptionValue("fixModuleName");
+        if (fixModuleName != null && fixModuleName.equals("true")) {
+            m.setFixModuleName(true);
         }
 
         String excludeReg = line.getOptionValue("excludeReg");
@@ -430,38 +284,35 @@ public class ExtractDependency {
         String nameMapStr = line.getOptionValue("nameMap");
 
         if (nameMapStr != null) {
-            constructNameMapFromString(nameMapStr, m.nameMap);
+            m.constructNameMapFromString(nameMapStr);
         }
 
         m.run();
 
     }
 
-    static void constructNameMapFromString(String nameMapStr, HashMap<String, Pattern> nameMap) {
-        String[] names = nameMapStr.split(",,");
+    void constructNameMapFromString(String nameMapStr) {
+        String[] names = nameMapStr.split(",");
         for (String n : names) {
             String[] ns = n.split("\\|\\|");
-            nameMap.put(ns[1], Pattern.compile(ns[0]));
+            RegReplace rr = new RegReplace();
+            rr.reg = Pattern.compile(ns[0]);
+            rr.replace = ns[1];
+            nameMap.add(rr);
         }
     }
 
     public void run() {
         long start = System.currentTimeMillis();
         String[] baseUrls = packages.getBaseUrls();
-        String[] encodings = packages.getEncodings();
-
-        int index = 0;
 
         for (String baseUrl : baseUrls) {
             Collection<File> files = org.apache.commons.io.FileUtils.listFiles(new File(baseUrl),
                     new String[]{"js"}, true);
 
             for (File f : files) {
-                processSingle(f.getPath(), encodings.length > index ? encodings[index] : "utf-8");
-
+                processSingle(f.getPath());
             }
-
-            index++;
         }
 
         // merge by name map
@@ -483,56 +334,9 @@ public class ExtractDependency {
         System.out.println("duration: " + (System.currentTimeMillis() - start));
     }
 
-    public static void testMain() throws Exception {
-
-        ExtractDependency m = new ExtractDependency();
-        String path;
-        path = ExtractDependency.class.getResource("/").getFile() + "../../../tests/kissy_combo/";
-        System.out.println(new File(path).getCanonicalPath());
-        m.getPackages().setBaseUrls(new String[]{
-                FileUtils.escapePath(new File(path).getCanonicalPath())
-        });
-        m.setOutput(path + "deps.js");
-        m.setOutputEncoding("utf-8");
-
-        String deps = "([\\w-]+)(?:/.*)?||$1";
-
-
-        constructNameMapFromString(deps, m.nameMap);
-
-        m.run();
-    }
-
-
-    public static void testKISSY() throws Exception {
-
-        ExtractDependency m = new ExtractDependency();
-        String path;
-
-        path = "d:\\code\\kissy_git\\kissy\\src\\";
-        m.getPackages().setBaseUrls(new String[]{
-                path
-        });
-        m.setOutput(path + "seed/src/dependency.js");
-        m.setOutputEncoding("utf-8");
-        m.getPackages().setEncodings(new String[]{
-                "utf-8"
-        });
-
-        String deps = "([\\w-]+)(?:/.*)?||$1";
-
-        constructNameMapFromString(deps, m.nameMap);
-
-        m.setIncludePattern(Pattern.compile("dom(/.*)?"));
-
-        m.run();
-    }
-
     public static void main(String[] args) throws Exception {
+        System.out.println("current path: " + new File(".").getAbsolutePath());
+        System.out.println("current args: " + Arrays.toString(args));
         commandRunnerCLI(args);
-
-        //testMain();
-
-        //testKISSY();
     }
 }

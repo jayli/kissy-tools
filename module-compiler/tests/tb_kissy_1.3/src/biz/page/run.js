@@ -1,4 +1,3 @@
-KISSY.add(function(){
-},{
-    requires:["../y"]
-})
+KISSY.add("biz/page/run", function() {
+}, {requires:["../y"]});
+

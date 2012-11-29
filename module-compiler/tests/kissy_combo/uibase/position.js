@@ -1,2 +1,3 @@
-KISSY.add(function(){
+KISSY.add("uibase/position", function() {
 });
+
