@@ -7,8 +7,8 @@
 */
 
 KISSY.add("biz/x", function() {
-    return "ÖÐÎÄ";
-}, {requires:["overlay", "switchable"]});
+    return "ä¸­æ–‡";
+}, {requires:["overlay", "switchable",window.x>1?"my":"my2"]});
 
 KISSY.add("biz/y", function() {
 }, {requires:["./x"]});

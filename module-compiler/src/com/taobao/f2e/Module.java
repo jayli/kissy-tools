@@ -4,7 +4,6 @@ import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * KISSY Module Format.
@@ -111,14 +110,7 @@ public class Module {
             return requires;
         }
         Node astRoot = this.getAstRoot();
-        String[] requires = ModuleUtils.getRequiresFromAst(astRoot, name);
-        ArrayList<String> rs = new ArrayList<String>();
-        for (String require : requires) {
-            if (!require.startsWith("#")) {
-                rs.add(require);
-            }
-        }
-        return rs.toArray(new String[rs.size()]);
+        return ModuleUtils.getRequiresFromAst(astRoot, name);
     }
 
     public boolean isWithModuleName() {

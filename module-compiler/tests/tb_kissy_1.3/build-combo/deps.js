@@ -2,5 +2,5 @@
 KISSY.config('modules', {
 'biz/page/run': {requires: ['biz/y']},
 'biz/y': {requires: ['biz/x']},
-'biz/x': {requires: ['overlay','switchable']}
+'biz/x': {requires: ['overlay','switchable',window.x > 1 ? "my" : "my2"]}
 });

@@ -123,9 +123,18 @@ public class Main {
         }
 
         if (outputDependency != null && dependencies.size() != 0) {
-            re = DEP_PREFIX + "'" + require + "': {requires: ['" +
-                    ArrayUtils.join(dependencies.toArray(new String[dependencies.size()]), "','")
-                    + "']}" + DEP_SUFFIX;
+
+
+            String allRs = "";
+            for (String r : dependencies) {
+                if (r.startsWith("#")) {
+                    allRs += "," + r.substring(1);
+                } else {
+                    allRs += ",'" + r + "'";
+                }
+            }
+            re = DEP_PREFIX + "'" + require + "': {requires: [" +
+                    allRs.substring(1) + "]}" + DEP_SUFFIX;
             FileUtils.outputContent(re, outputDependency, outputEncoding);
             System.out.println("success generated: " + outputDependency);
         }
@@ -149,7 +158,9 @@ public class Main {
 
         // if css file, do not combine with js files
         // !TODO generate a combined css file
-        if (requiredModuleName.endsWith(".css")) {
+        if (requiredModuleName.endsWith(".css") ||
+                // conditional loader
+                requiredModuleName.startsWith("#")) {
             this.addDependency(requiredModuleName);
             return;
         }

@@ -48,6 +48,12 @@ public class ModuleUtils {
     }
 
 
+    /**
+     * 数组中 #开头的字符串表示表达式
+     * @param astRoot ast root
+     * @param name    module name
+     * @return String[] required modules 's name
+     */
     public static String[] getRequiresFromAst(Node astRoot, String name) {
         ArrayList<String> re = new ArrayList<String>();
         Node r = astRoot.getFirstChild().getFirstChild().getLastChild();

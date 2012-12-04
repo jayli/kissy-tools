@@ -9,7 +9,7 @@ public class Test {
         Main main = new Main();
         String path;
         path = ExtractDependency.class.getResource("/").getFile() + "../../../tests/tb_kissy_1.3/src/";
-        String output = path + "../build/page/";
+        String output = path + "../build/biz/page/";
 
         new File(output).mkdirs();
 
@@ -52,11 +52,11 @@ public class Test {
         });
         m.setOutput(path + "../build-combo/deps.js");
         m.setOutputEncoding("utf-8");
-
         m.run();
     }
 
     public static void main(String[] args) throws Exception {
         testKISSY1_3_ExtractDependency();
+        testKISSY1_3_Main();
     }
 }

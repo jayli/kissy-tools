@@ -139,7 +139,11 @@ public class ExtractDependency {
             if (requires.size() > 0) {
                 String allRs = "";
                 for (String r : requires) {
-                    allRs += ",'" + r + "'";
+                    if (r.startsWith("#")) {
+                        allRs += "," + r.substring(1);
+                    } else {
+                        allRs += ",'" + r + "'";
+                    }
                 }
                 codes.add("'" + name + "': {requires: [" + allRs.substring(1) + "]}");
             }
