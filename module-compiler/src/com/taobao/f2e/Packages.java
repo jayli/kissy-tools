@@ -131,7 +131,7 @@ public class Packages {
                 finalBase = baseUrl;
             }
         }
-        if (curIndex != -1) {
+        if (finalIndex != -1) {
             if (finalPackageIndex < encodings.length) {
                 encoding = encodings[finalPackageIndex];
             }

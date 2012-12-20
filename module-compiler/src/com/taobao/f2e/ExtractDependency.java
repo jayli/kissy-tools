@@ -99,7 +99,7 @@ public class ExtractDependency {
         // 没必要缓存，每次都构建
         Module m = this.getPackages().getModuleFromPath(path);
 
-        if (!m.isValidFormat()) {
+        if (m == null || !m.isValidFormat()) {
             System.out.println("invalid module: " + path);
             return;
         }
