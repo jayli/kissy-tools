@@ -1,6 +1,6 @@
 {
-"--output":"d:/code/kissy_git/kissy/docs",
-"--title":"KISSY v1.3 Documentation",
+"--output":"d:/code/kissy_git/kissy/docs/api",
+"--title":"KISSY Documentation",
 "--external":"window,HTMLDocument,HTMLElement,DocumentFragment,XMLHttpRequest",
 "--":[
         "d:/code/kissy_git/kissy/src/ajax/src",
@@ -41,14 +41,14 @@
     	"d:/code/kissy_git/kissy/src/overlay/src",
     	"d:/code/kissy_git/kissy/src/resizable/src",
     	"d:/code/kissy_git/kissy/src/seed/src",
-    	// "d:/code/kissy_git/kissy/src/suggest/src",
+    	"d:/code/kissy_git/kissy/src/tabs/src",
     	// "d:/code/kissy_git/kissy/src/switchable/src",
     	"d:/code/kissy_git/kissy/src/xtemplate/sub-modules/facade/src",
     	"d:/code/kissy_git/kissy/src/xtemplate/sub-modules/compiler/src",
     	"d:/code/kissy_git/kissy/src/xtemplate/sub-modules/runtime/src",
     	//"d:/code/kissy_git/kissy/src/tree/src",
-    	"d:/code/kissy_git/kissy/src/ua/src",
-    	//"d:/code/kissy_git/kissy/src/waterfall/src",
+    	//"d:/code/kissy_git/kissy/src/ua/src",
+    	"d:/code/kissy_git/kissy/src/waterfall/src",
     	//"d:/code/kissy_git/kissy/src/editor/src",
     	"d:/code/kissy_git/kissy/src/combobox/src"	
     ]
