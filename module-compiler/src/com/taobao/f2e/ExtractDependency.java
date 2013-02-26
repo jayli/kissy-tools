@@ -104,11 +104,7 @@ public class ExtractDependency {
             return;
         }
 
-        m.completeModuleName();
-
-        if (!m.isWithModuleName() && this.fixModuleName) {
-            m.updateCodeToFile();
-        }
+        m.completeModuleName(this.fixModuleName);
 
         String name = m.getName();
 

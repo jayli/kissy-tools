@@ -86,23 +86,19 @@ public class Module {
     /**
      * S.add(func); -> S.add("moduleName",func);
      */
-    public void completeModuleName() {
+    public void completeModuleName(boolean saveToFile) {
         Module module = this;
         Node moduleNameNode = module.getModuleNameNode();
         if (moduleNameNode.getType() != Token.STRING) {
             moduleNameNode.addChildAfter(Node.newString(module.getName()),
                     moduleNameNode.getParent().getChildBefore(moduleNameNode));
-            module.setWithModuleName(false);
             module.setCode(AstUtils.toSource(module.getAstRoot()));
-            FileUtils.outputContent(code, fullpath, encoding);
+            if (saveToFile) {
+                FileUtils.outputContent(code, fullpath, encoding);
+            }
         } else {
-            module.setWithModuleName(true);
             module.setCode(module.getContent());
         }
-    }
-
-    public void updateCodeToFile() {
-        FileUtils.outputContent(code, fullpath, encoding);
     }
 
     public String[] getRequires() {
@@ -111,14 +107,6 @@ public class Module {
         }
         Node astRoot = this.getAstRoot();
         return ModuleUtils.getRequiresFromAst(astRoot, name);
-    }
-
-    public boolean isWithModuleName() {
-        return withModuleName;
-    }
-
-    public void setWithModuleName(boolean withModuleName) {
-        this.withModuleName = withModuleName;
     }
 
     public String getCode() {

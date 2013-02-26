@@ -207,7 +207,7 @@ public class Main {
         //mark as start for cyclic detection
         modulesVisited.add(requiredModuleName);
 
-        requiredModule.completeModuleName();
+        requiredModule.completeModuleName(fixModuleName);
 
         String[] requires = requiredModule.getRequires();
 
@@ -219,11 +219,6 @@ public class Main {
         modulesVisited.remove(modulesVisited.size() - 1);
 
         modules.add(requiredModule);
-
-        if (fixModuleName && !requiredModule.isWithModuleName()) {
-            requiredModule.updateCodeToFile();
-        }
-
     }
 
 

@@ -23,21 +23,6 @@ public class Test {
         main.run();
     }
 
-    public static void testKISSY_src_build() throws Exception {
-        ExtractDependency m = new ExtractDependency();
-        String path;
-        path = ExtractDependency.class.getResource("/").getFile() +
-                "../../../tests/kissy_combo/";
-        System.out.println(new File(path).getCanonicalPath());
-        m.getPackages().setBaseUrls(new String[]{
-                FileUtils.escapePath(new File(path).getCanonicalPath())
-        });
-        m.setOutput(path + "dep.js");
-        m.constructNameMapFromString("(event|dom/ie)(?:/.*)?||$1");
-        m.setOutputEncoding("utf-8");
-        m.run();
-    }
-
     public static void testKISSY1_3_ExtractDependency() throws Exception {
         ExtractDependency m = new ExtractDependency();
         String path;
