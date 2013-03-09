@@ -96,25 +96,29 @@ public class Module {
      */
     public void completeModuleName(boolean saveToFile) {
         Module module = this;
-        Node moduleNameNode = module.getModuleNameNode();
-        if (moduleNameNode.getType() != Token.STRING) {
-			// 补全Modulename
-            moduleNameNode.addChildAfter(Node.newString(module.getName()),
-                    moduleNameNode.getParent().getChildBefore(moduleNameNode));
-            module.setCode(AstUtils.toSource(module.getAstRoot()));
-            if (saveToFile) {
-                //FileUtils.outputContent(code, fullpath, encoding);
-                FileUtils.outputContent(module.getContent().replace("KISSY.add(","KISSY.add(\""+module.getName()+"\","), fullpath, getEncode(fullpath));
-            }
-        } else {
-			// 写入源文件
-            module.setCode(module.getContent());
-        }
+		try {
+			Node moduleNameNode = module.getModuleNameNode();
+			if (moduleNameNode.getType() != Token.STRING) {
+				// 补全Modulename
+				moduleNameNode.addChildAfter(Node.newString(module.getName()),
+						moduleNameNode.getParent().getChildBefore(moduleNameNode));
+				module.setCode(AstUtils.toSource(module.getAstRoot()));
+				if (saveToFile) {
+					//FileUtils.outputContent(code, fullpath, encoding);
+					FileUtils.outputContent(module.getContent().replace("KISSY.add(","KISSY.add(\""+module.getName()+"\","), fullpath, getEncode(fullpath));
+				}
+			} else {
+				// 写入源文件
+				module.setCode(module.getContent());
+			}
+		}catch(Exception ex){
+
+		}
     }
 
 	// added by jayli
 	public String getEncode(String path){  
-		/*-------------------------------------------------------------------------
+		/*------------------------------------------------------------------------
 		  使用需要用到三个第三方JAR包：antlr.jar、chardet.jar和cpdetector.jar
 		  cpDetector是基于统计学原理的，不保证完全正确。
 		  --------------------------------------------------------------------------*/
@@ -193,11 +197,15 @@ public class Module {
     }
 
     public String getModuleNameFromNode() {
-        Node moduleNameNode = this.getModuleNameNode();
-        if (moduleNameNode != null && moduleNameNode.getType() == Token.STRING) {
-            return moduleNameNode.getString();
-        }
-        return null;
+		try{
+			Node moduleNameNode = this.getModuleNameNode();
+			if (moduleNameNode != null && moduleNameNode.getType() == Token.STRING) {
+				return moduleNameNode.getString();
+			}
+			return null;
+		} catch(Exception e){
+			return null;
+		}
     }
 
     public boolean isValidFormat() {
